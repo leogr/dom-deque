@@ -1,0 +1,41 @@
+{
+  "name": "dom-deque",
+  "version": "0.0.1",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leogr/dom-deque.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/leogr/dom-deque#readme",
+  "bugs": {
+    "url": "https://github.com/leogr/dom-deque/issues"
+  },
+  "progress": false,
+  "loglevel": "silent",
+  "depth": 0,
+  "git": {
+    "scripts": {
+      "commit-msg": "./node_modules/.bin/validate-commit-msg --preset eslint $1"
+    }
+  },
+  "dependencies": {
+    "@polymer/polymer": "^1.2.5-npm-test.2"
+  },
+  "devDependencies": {
+    "@polymer/iron-component-page": "0.0.3",
+    "@polymer/iron-demo-helpers": "0.0.3",
+    "git-scripts": "0.2.x",
+    "validate-commit": "2.1.x",
+    "web-component-tester": "4.2.x",
+    "webcomponents.js": "webcomponents/webcomponentsjs#v0.7.22"
+  },
+  "keywords": [
+    "web-components",
+    "polymer",
+    "DOM",
+    "queue",
+    "deque"
+  ],
+  "scripts": {}
+}
