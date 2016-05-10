@@ -1,7 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 
+<script src="Templatizer.js"></script>
 <script src="DomDequeBehavior.js"></script>
-<script src="ContentChangesObserverBehavior.js"></script>
 
 <!--
 A type extension ...
@@ -22,16 +22,14 @@ Example:
   'use strict';
 
   Polymer({
+
     is: 'dom-deque',
     extends: 'template',
     _template: null,
+
     behaviors: [
-      DomDeque.DomDequeBehavior,
-      DomDeque.ContentChangesObserverBehavior
-    ],
-    _onContentChanges: function() {
-      this.cleanCache();
-    }
+      DomDeque.DomDequeBehavior
+    ]
   });
   </script>
 </dom-module>
