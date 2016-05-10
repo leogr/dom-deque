@@ -7,7 +7,7 @@ var DomDeque = DomDeque || {};
 
     attached: function() {
       this._contentObserver = Polymer.dom(this.content).observeNodes(
-        this._onContentChanges().bind(this)
+        this._onContentChanges.bind(this)
       );
     },
 
