@@ -30,8 +30,8 @@
     "polylint": "^2.10.1",
     "polyserve": "^0.10.0",
     "validate-commit": "2.1.x",
-    "web-component-tester": "4.2.x",
-    "webcomponents.js": "0.7.x"
+    "web-component-tester": "^4.2.x",
+    "webcomponents.js": "^0.7.x"
   },
   "keywords": [
     "web-components",

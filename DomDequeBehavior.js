@@ -19,53 +19,60 @@ var DomDeque = DomDeque || {};
     // TODO: Detect case where template was re-attached in new position (use attached callback)
     // https://github.com/Polymer/polymer/blob/master/src/lib/template/dom-if.html#L132
 
+    properties: {
+      size: {
+        type: Number,
+        value: Infinity
+      }
+    }
+
     // Element Lifecycle
 
-    created: function () {
+    created: function() {
       this._instances = [];
-      this._limit = Infinity;
+      this.size = Infinity;
     },
 
-    pushInstance: function () {
+    pushInstance: function() {
       var instance = this._makeInstance();
       if (instance) {
         this._instances.push(instance);
-        if (this._instances.length > this._limit) {
+        if (this._instances.length > this.size) {
           this.shiftInstance();
         }
       }
       return instance;
     },
 
-    unshiftInstance: function () {
+    unshiftInstance: function() {
       var instance = this._makeInstance(true);
       if (instance) {
         this._instances.unshift(instance);
-        if (this._instances.length > this._limit) {
+        if (this._instances.length > this.size) {
           this.popInstance();
         }
       }
       return instance;
     },
 
-    shiftInstance: function () {
+    shiftInstance: function() {
       var instance = this._instances.shift();
       this._teardownInstance(instance);
       return instance;
     },
 
-    popInstance: function () {
+    popInstance: function() {
       var instance = this._instances.pop();
       this._teardownInstance(instance);
       return instance;
     },
 
-    resetRender: function () {
+    resetRender: function() {
       this._content = null;
       this.ctor = null;
     },
 
-    _makeInstance: function (unshift) {
+    _makeInstance: function(unshift) {
       if (!this.ctor) {
         this.templatize(this);
       }
@@ -92,7 +99,7 @@ var DomDeque = DomDeque || {};
       }
     },
 
-    _teardownInstance: function (instance) {
+    _teardownInstance: function(instance) {
       if (instance) {
         var c$ = instance._children;
         if (c$ && c$.length) {
@@ -108,7 +115,7 @@ var DomDeque = DomDeque || {};
     // Implements extension point from Templatizer mixin
     // Called as side-effect of a host property change, responsible for
     // notifying parent.<prop> path change on instance
-    _forwardParentProp: function (prop, value) {
+    _forwardParentProp: function(prop, value) {
       for (var i = 0; i < this._instances.length; i++) {
         this._instances[i][prop] = value;
       }
@@ -116,7 +123,7 @@ var DomDeque = DomDeque || {};
     // Implements extension point from Templatizer
     // Called as side-effect of a host path change, responsible for
     // notifying parent.<path> path change on each row
-    _forwardParentPath: function (path, value) {
+    _forwardParentPath: function(path, value) {
       for (var i = 0; i < this._instances.length; i++) {
         this._instances[i]._notifyPath(path, value, true);
       }
