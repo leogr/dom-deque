@@ -19,53 +19,120 @@ var DomDeque = DomDeque || {};
     // TODO: Detect case where template was re-attached in new position (use attached callback)
     // https://github.com/Polymer/polymer/blob/master/src/lib/template/dom-if.html#L132
 
-    // Element Lifecycle
-
-    created: function () {
-      this._instances = [];
-      this._limit = Infinity;
+    properties: {
+      /**
+       * The number of elements in the queue (defaults to infinity).
+       *
+       * Sizes the queue so that it contains up to n elements.
+       * If it is smaller than the current queue length,
+       * the queue is reduced to its first `maxSize` elements,
+       * removing those beyond.
+       *
+       * @type {?number}
+       */
+      maxSize: {
+        type: Number,
+        value: Infinity,
+        observer: '_onMaxSizeChanged'
+      }
     },
 
-    pushInstance: function () {
+    _onMaxSizeChanged: function(newSize) {
+      for (var i = this._instances.length; i >= newSize; i--) {
+        this.popBack();
+      }
+    },
+
+    created: function() {
+      this._instances = [];
+    },
+
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    get back() {
+      return this._instances[this.instances.length - 1];
+    },
+
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    get front() {
+      return this._instances[0];
+    },
+
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    pushBack: function() {
       var instance = this._makeInstance();
       if (instance) {
         this._instances.push(instance);
-        if (this._instances.length > this._limit) {
-          this.shiftInstance();
+        if (this._instances.length > this.maxSize) {
+          this.popFront();
         }
       }
       return instance;
     },
 
-    unshiftInstance: function () {
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    pushFront: function() {
       var instance = this._makeInstance(true);
       if (instance) {
         this._instances.unshift(instance);
-        if (this._instances.length > this._limit) {
-          this.popInstance();
+        if (this._instances.length > this.maxSize) {
+          this.popBack();
         }
       }
       return instance;
     },
 
-    shiftInstance: function () {
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    popFront: function() {
       var instance = this._instances.shift();
       this._teardownInstance(instance);
       return instance;
     },
 
-    popInstance: function () {
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    popBack: function() {
       var instance = this._instances.pop();
       this._teardownInstance(instance);
       return instance;
     },
 
-    resetRender: function () {
+    /**
+     * Cleans the templatizer cache.
+     *
+     * Forces the templatizer to prepare again the template when `content` changes.
+     * The `ContentChangesObserverBehavior` makes this to happen automatically.
+     *
+     * @method forceTemplatize
+     */
+    cleanCache: function() {
       this._content = null;
       this.ctor = null;
     },
 
-    _makeInstance: function (unshift) {
+    _makeInstance: function(atFront) {
       if (!this.ctor) {
         this.templatize(this);
       }
@@ -77,7 +144,7 @@ var DomDeque = DomDeque || {};
         var instance = this.stamp();
         var insertionPoint = this;
 
-        if (unshift) {
+        if (atFront) {
           for (var i = 0; i < this._instances.length; i++) {
             var nInstance = this._instances[i];
             if (nInstance._children[0]) {
@@ -92,7 +159,7 @@ var DomDeque = DomDeque || {};
       }
     },
 
-    _teardownInstance: function (instance) {
+    _teardownInstance: function(instance) {
       if (instance) {
         var c$ = instance._children;
         if (c$ && c$.length) {
@@ -108,15 +175,16 @@ var DomDeque = DomDeque || {};
     // Implements extension point from Templatizer mixin
     // Called as side-effect of a host property change, responsible for
     // notifying parent.<prop> path change on instance
-    _forwardParentProp: function (prop, value) {
+    _forwardParentProp: function(prop, value) {
       for (var i = 0; i < this._instances.length; i++) {
         this._instances[i][prop] = value;
       }
     },
+
     // Implements extension point from Templatizer
     // Called as side-effect of a host path change, responsible for
     // notifying parent.<path> path change on each row
-    _forwardParentPath: function (path, value) {
+    _forwardParentPath: function(path, value) {
       for (var i = 0; i < this._instances.length; i++) {
         this._instances[i]._notifyPath(path, value, true);
       }
