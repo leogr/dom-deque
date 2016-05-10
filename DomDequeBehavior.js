@@ -24,44 +24,41 @@ var DomDeque = DomDeque || {};
         type: Number,
         value: Infinity
       }
-    }
-
-    // Element Lifecycle
+    },
 
     created: function() {
       this._instances = [];
-      this.size = Infinity;
     },
 
-    pushInstance: function() {
+    pushback: function() {
       var instance = this._makeInstance();
       if (instance) {
         this._instances.push(instance);
         if (this._instances.length > this.size) {
-          this.shiftInstance();
+          this.popfront();
         }
       }
       return instance;
     },
 
-    unshiftInstance: function() {
+    pushfront: function() {
       var instance = this._makeInstance(true);
       if (instance) {
         this._instances.unshift(instance);
         if (this._instances.length > this.size) {
-          this.popInstance();
+          this.popback();
         }
       }
       return instance;
     },
 
-    shiftInstance: function() {
+    popfront: function() {
       var instance = this._instances.shift();
       this._teardownInstance(instance);
       return instance;
     },
 
-    popInstance: function() {
+    popback: function() {
       var instance = this._instances.pop();
       this._teardownInstance(instance);
       return instance;
@@ -72,7 +69,7 @@ var DomDeque = DomDeque || {};
       this.ctor = null;
     },
 
-    _makeInstance: function(unshift) {
+    _makeInstance: function(atFront) {
       if (!this.ctor) {
         this.templatize(this);
       }
@@ -84,7 +81,7 @@ var DomDeque = DomDeque || {};
         var instance = this.stamp();
         var insertionPoint = this;
 
-        if (unshift) {
+        if (atFront) {
           for (var i = 0; i < this._instances.length; i++) {
             var nInstance = this._instances[i];
             if (nInstance._children[0]) {
@@ -120,6 +117,7 @@ var DomDeque = DomDeque || {};
         this._instances[i][prop] = value;
       }
     },
+
     // Implements extension point from Templatizer
     // Called as side-effect of a host path change, responsible for
     // notifying parent.<path> path change on each row
