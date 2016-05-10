@@ -30,6 +30,14 @@ var DomDeque = DomDeque || {};
       this._instances = [];
     },
 
+    get back() {
+      return this._instances[this.size - 1];
+    },
+
+    get front() {
+      return this._instances[0];
+    },
+
     pushback: function() {
       var instance = this._makeInstance();
       if (instance) {
