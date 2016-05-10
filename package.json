@@ -27,6 +27,7 @@
     "@polymer/iron-demo-helpers": "0.0.3",
     "cpy-cli": "1.0.x",
     "git-scripts": "0.2.x",
+    "polylint": "^2.10.1",
     "polyserve": "^0.10.0",
     "validate-commit": "2.1.x",
     "web-component-tester": "4.2.x",
@@ -45,6 +46,7 @@
     "cp-hydrolysis": "cpy hydrolysis/**/*.{js,html} @polymer --parents --cwd=${PWD}/node_modules",
     "cp-webcomponentsjs": "cpy webcomponents.js/webcomponents-lite.js @polymer/webcomponentsjs --cwd=${PWD}/node_modules",
     "postinstall": "npm run cp-marked && npm run cp-prism && npm run cp-hydrolysis && npm run cp-webcomponentsjs",
-    "serve": "polyserve -c node_modules/@polymer -n dom-deque"
+    "serve": "polyserve -c node_modules/@polymer -n dom-deque",
+    "lint": "polylint -b node_modules/@polymer --no-recursion --input dom-deque.html"
   }
 }
