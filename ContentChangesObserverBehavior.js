@@ -3,6 +3,17 @@
 var DomDeque = DomDeque || {};
 
 (function() {
+  /**
+   * The `DomDeque.ContentChangesObserverBehavior` behavior ...
+   *
+   * Example:
+   *     // TODO
+   *
+   * ...
+   *
+   * @demo demo/index.html
+   * @polymerBehavior DomDeque.ContentChangesObserverBehavior
+   */
   var ContentChangesObserverBehaviorImpl = {
 
     attached: function() {
@@ -20,15 +31,5 @@ var DomDeque = DomDeque || {};
     _onContentChanges: function() {}
   };
 
-  /**
-   * The `DomDeque.ContentChangesObserverBehavior` behavior ...
-   *
-   * Example:
-   *     // TODO
-   *
-   * ...
-   *
-   * @polymerBehavior
-   */
   DomDeque.ContentChangesObserverBehavior = [ContentChangesObserverBehaviorImpl];
 })();

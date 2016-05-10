@@ -3,6 +3,17 @@
 var DomDeque = DomDeque || {};
 
 (function() {
+  /**
+   * The `DomDeque.DomDequeBehavior` behavior ...
+   *
+   * Example:
+   *     // TODO
+   *
+   * ...
+   *
+   * @demo demo/index.html
+   * @polymerBehavior DomDeque.DomDequeBehavior
+   */
   var DomDequeBehaviorImpl = {
 
     // TODO: Detect case where template was re-attached in new position (use attached callback)
@@ -112,16 +123,6 @@ var DomDeque = DomDeque || {};
     }
   };
 
-  /**
-   * The `DomDeque.DomDequeBehavior` behavior ...
-   *
-   * Example:
-   *     // TODO
-   *
-   * ...
-   *
-   * @polymerBehavior
-   */
   DomDeque.DomDequeBehavior = [
     Polymer.Templatizer,
     DomDequeBehaviorImpl
