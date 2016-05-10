@@ -1,5 +1,7 @@
 'use strict';
+
 var DomDeque = DomDeque || {};
+
 (function() {
   var ContentChangesObserverBehaviorImpl = {
 
@@ -17,7 +19,6 @@ var DomDeque = DomDeque || {};
 
     _onContentChanges: function() {}
   };
-
 
   DomDeque.ContentChangesObserverBehavior = ContentChangesObserverBehaviorImpl;
 })();

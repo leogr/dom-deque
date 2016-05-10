@@ -1,9 +1,11 @@
 'use strict';
+
 var DomDeque = DomDeque || {};
+
 (function() {
   var DomDequeBehaviorImpl = {
 
-    // TODO:  Detect case where template was re-attached in new position (use attached callback)
+    // TODO: Detect case where template was re-attached in new position (use attached callback)
     // https://github.com/Polymer/polymer/blob/master/src/lib/template/dom-if.html#L132
 
     // Element Lifecycle
@@ -109,7 +111,6 @@ var DomDeque = DomDeque || {};
       }
     }
   };
-
 
   DomDeque.DomDequeBehavior = [
     Polymer.Templatizer,
