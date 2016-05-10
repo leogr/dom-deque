@@ -20,5 +20,15 @@ var DomDeque = DomDeque || {};
     _onContentChanges: function() {}
   };
 
-  DomDeque.ContentChangesObserverBehavior = ContentChangesObserverBehaviorImpl;
+  /**
+   * The `DomDeque.ContentChangesObserverBehavior` behavior ...
+   *
+   * Example:
+   *     // TODO
+   *
+   * ...
+   *
+   * @polymerBehavior
+   */
+  DomDeque.ContentChangesObserverBehavior = [ContentChangesObserverBehaviorImpl];
 })();

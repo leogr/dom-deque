@@ -112,6 +112,16 @@ var DomDeque = DomDeque || {};
     }
   };
 
+  /**
+   * The `DomDeque.DomDequeBehavior` behavior ...
+   *
+   * Example:
+   *     // TODO
+   *
+   * ...
+   *
+   * @polymerBehavior
+   */
   DomDeque.DomDequeBehavior = [
     Polymer.Templatizer,
     DomDequeBehaviorImpl
