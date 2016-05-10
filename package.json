@@ -25,10 +25,12 @@
   "devDependencies": {
     "@polymer/iron-component-page": "0.0.3",
     "@polymer/iron-demo-helpers": "0.0.3",
+    "cpy-cli": "1.0.x",
     "git-scripts": "0.2.x",
+    "polyserve": "^0.10.0",
     "validate-commit": "2.1.x",
     "web-component-tester": "4.2.x",
-    "webcomponents.js": "webcomponents/webcomponentsjs#v0.7.22"
+    "webcomponents.js": "0.7.x"
   },
   "keywords": [
     "web-components",
@@ -37,5 +39,12 @@
     "queue",
     "deque"
   ],
-  "scripts": {}
+  "scripts": {
+    "cp-marked": "cpy marked/lib/marked.js @polymer --parents --cwd=${PWD}/node_modules",
+    "cp-prism": "cpy prismjs-package/lib/*.js @polymer/prism --cwd=${PWD}/node_modules && cpy prismjs-package/themes/*.css @polymer/prism/themes --cwd=${PWD}/node_modules ",
+    "cp-hydrolysis": "cpy hydrolysis/**/*.{js,html} @polymer --parents --cwd=${PWD}/node_modules",
+    "cp-webcomponentsjs": "cpy webcomponents.js/webcomponents-lite.js @polymer/webcomponentsjs --cwd=${PWD}/node_modules",
+    "postinstall": "npm run cp-marked && npm run cp-prism && npm run cp-hydrolysis && npm run cp-webcomponentsjs",
+    "serve": "polyserve -c node_modules/@polymer -n dom-deque"
+  }
 }
