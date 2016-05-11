@@ -24,7 +24,7 @@ var DomDeque = DomDeque || {};
 
     detached: function() {
       if (this._contentObserver) {
-        Polymer.dom(this).unobserveNodes(this._contentObserver);
+        Polymer.dom(this.content).unobserveNodes(this._contentObserver);
       }
     },
 
