@@ -36,6 +36,23 @@ var DomDeque = DomDeque || {};
       this._instances = [];
     },
 
+    attached: function() {
+      if (this._instances.length) {
+        // NOTE: ideally should not be async, but node can be attached
+        // when shady dom is in the act of distributing/composing so push it out
+        this.async(this._ensureInstances);
+      }
+    },
+
+    detached: function() {
+      if (!this.parentNode ||
+        (this.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE &&
+        (!Polymer.Settings.hasShadow ||
+        !(this.parentNode instanceof ShadowRoot)))) {
+        this._teardownInstances();
+      }
+    },
+
     /**
      * Acces last template instance.
      *
@@ -183,6 +200,31 @@ var DomDeque = DomDeque || {};
             parent.removeChild(n);
           }
         }
+      }
+    },
+
+    _ensureInstances: function() {
+      var parentNode = Polymer.dom(this).parentNode;
+      // Guard against element being detached while render was queued
+      if (parentNode) {
+        for (var i = 0; i < this._instances.length; i++) {
+          var c$ = this._instances[i]._children;
+          if (c$ && c$.length) {
+            // Detect case where dom-deque was re-attached in new position
+            var lastChild = Polymer.dom(this).previousSibling;
+            if (lastChild !== c$[c$.length-1]) {
+              for (var i=0, n; (i<c$.length) && (n=c$[i]); i++) {
+                parent.insertBefore(n, this);
+              }
+            }
+          }
+        }
+      }
+    },
+
+    _teardownInstances: function() {
+      for (var instance; instance = this._instances.pop(); ) {
+        this._teardownInstance(instance);
       }
     },
 
