@@ -15,16 +15,11 @@ var DomDeque = DomDeque || {};
    * @polymerBehavior DomDeque.DomDequeBehavior
    */
   var DomDequeBehaviorImpl = {
-
-    // TODO: Detect case where template was re-attached in new position (use attached callback)
-    // https://github.com/Polymer/polymer/blob/master/src/lib/template/dom-if.html#L132
-
     properties: {
       /**
-       * The number of elements in the queue (defaults to infinity).
-       *
-       * Sizes the queue so that it contains up to n elements.
-       * If it is smaller than the current queue length,
+       * The maximum number of elements in the queue (defaults to infinity).
+       * Sizes the queue so that it contains up to `maxSize` elements.
+       * If set to a value smaller than the current queue length,
        * the queue is reduced to its first `maxSize` elements,
        * removing those beyond.
        *
@@ -37,38 +32,35 @@ var DomDeque = DomDeque || {};
       }
     },
 
-    _onMaxSizeChanged: function(newSize) {
-      for (var i = this._instances.length; i >= newSize; i--) {
-        this.popBack();
-      }
-    },
-
     created: function() {
       this._instances = [];
     },
 
     /**
+     * Acces last template instance.
      *
-     *
-     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     * @readonly
+     * @type {Polymer.Base}
      */
     get back() {
       return this._instances[this.instances.length - 1];
     },
 
     /**
+     * Access first template instance.
      *
-     *
-     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     * @readonly
+     * @type {Polymer.Base}
      */
     get front() {
       return this._instances[0];
     },
 
     /**
+     * Renders the current template content at the end of the deque,
+     * attaching it after the last template instance.
      *
-     *
-     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     * @return {Polymer.Base} Instance to manage the new template instance.
      */
     pushBack: function() {
       var instance = this._makeInstance();
@@ -82,9 +74,10 @@ var DomDeque = DomDeque || {};
     },
 
     /**
+     * Renders the current template content at the front of the deque,
+     * attaching it before the first template instance.
      *
-     *
-     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     * @return {Polymer.Base} Instance to manage the new template instance.
      */
     pushFront: function() {
       var instance = this._makeInstance(true);
@@ -98,9 +91,10 @@ var DomDeque = DomDeque || {};
     },
 
     /**
+     * Detaches the first template instance,
+     * removing it from the front of the queue.
      *
-     *
-     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     * @return {Polymer.Base} Instance to manage the removed template instance.
      */
     popFront: function() {
       var instance = this._instances.shift();
@@ -109,9 +103,10 @@ var DomDeque = DomDeque || {};
     },
 
     /**
+     * Detaches the last template instance,
+     * removing it from the back of the queue.
      *
-     *
-     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     * @return {Polymer.Base} Instance to manage the removed template instance.
      */
     popBack: function() {
       var instance = this._instances.pop();
@@ -121,17 +116,31 @@ var DomDeque = DomDeque || {};
 
     /**
      * Cleans the templatizer cache.
-     *
      * Forces the templatizer to prepare again the template when `content` changes.
      * The `ContentChangesObserverBehavior` makes this to happen automatically.
-     *
-     * @method forceTemplatize
      */
     cleanCache: function() {
       this._content = null;
       this.ctor = null;
     },
 
+    /**
+     * Resizes the queue size.
+     *
+     * @param {number} n New maximum size
+     */
+    _onMaxSizeChanged: function(n) {
+      for (var i = this._instances.length; i >= n; i--) {
+        this.popBack();
+      }
+    },
+
+    /**
+     * Renders the current template content.
+     *
+     * @param {?boolean} atFront Whether the instance must be made at front or not.
+     * @return {Polymer.Base} Instance of the current template content.
+     */
     _makeInstance: function(atFront) {
       if (!this.ctor) {
         this.templatize(this);
@@ -159,11 +168,16 @@ var DomDeque = DomDeque || {};
       }
     },
 
+    /**
+     * Removes a template instance from its parent.
+     *
+     * @param {Polymer.Base} instance Instance to tear down.
+     */
     _teardownInstance: function(instance) {
       if (instance) {
         var c$ = instance._children;
         if (c$ && c$.length) {
-          // use first child parent, for case when dom-if may have been detached
+          // Use first child parent (scenario: template may have been detached)
           var parent = Polymer.dom(Polymer.dom(c$[0]).parentNode);
           for (var i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
             parent.removeChild(n);
@@ -172,18 +186,22 @@ var DomDeque = DomDeque || {};
       }
     },
 
-    // Implements extension point from Templatizer mixin
-    // Called as side-effect of a host property change, responsible for
-    // notifying parent.<prop> path change on instance
+    /**
+     * Implements extension point from Templatizer mixin.
+     * Called as side-effect of a host property change,
+     * responsible for notifying `parent.<prop>` property change on each instance.
+     */
     _forwardParentProp: function(prop, value) {
       for (var i = 0; i < this._instances.length; i++) {
         this._instances[i][prop] = value;
       }
     },
 
-    // Implements extension point from Templatizer
-    // Called as side-effect of a host path change, responsible for
-    // notifying parent.<path> path change on each row
+    /**
+     * Implements extension point from Templatizer.
+     * Called as side-effect of a host path change,
+     * responsible for notifying `parent.<path>` path change on each instance.
+     */
     _forwardParentPath: function(path, value) {
       for (var i = 0; i < this._instances.length; i++) {
         this._instances[i]._notifyPath(path, value, true);
