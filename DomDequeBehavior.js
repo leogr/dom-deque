@@ -20,9 +20,26 @@ var DomDeque = DomDeque || {};
     // https://github.com/Polymer/polymer/blob/master/src/lib/template/dom-if.html#L132
 
     properties: {
-      size: {
+      /**
+       * The number of elements in the queue (defaults to infinity).
+       *
+       * Sizes the queue so that it contains up to n elements.
+       * If it is smaller than the current queue length,
+       * the queue is reduced to its first `maxSize` elements,
+       * removing those beyond.
+       *
+       * @type {?number}
+       */
+      maxSize: {
         type: Number,
-        value: Infinity
+        value: Infinity,
+        observer: '_onMaxSizeChanged'
+      }
+    },
+
+    _onMaxSizeChanged: function(newSize) {
+      for (var i = this._instances.length; i >= newSize; i--) {
+        this.popBack();
       }
     },
 
@@ -30,49 +47,87 @@ var DomDeque = DomDeque || {};
       this._instances = [];
     },
 
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
     get back() {
-      return this._instances[this.size - 1];
+      return this._instances[this.instances.length - 1];
     },
 
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
     get front() {
       return this._instances[0];
     },
 
-    pushback: function() {
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    pushBack: function() {
       var instance = this._makeInstance();
       if (instance) {
         this._instances.push(instance);
-        if (this._instances.length > this.size) {
-          this.popfront();
+        if (this._instances.length > this.maxSize) {
+          this.popFront();
         }
       }
       return instance;
     },
 
-    pushfront: function() {
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    pushFront: function() {
       var instance = this._makeInstance(true);
       if (instance) {
         this._instances.unshift(instance);
-        if (this._instances.length > this.size) {
-          this.popback();
+        if (this._instances.length > this.maxSize) {
+          this.popBack();
         }
       }
       return instance;
     },
 
-    popfront: function() {
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    popFront: function() {
       var instance = this._instances.shift();
       this._teardownInstance(instance);
       return instance;
     },
 
-    popback: function() {
+    /**
+     *
+     *
+     * @return {Polymer.Base} The `Polymer.Base` instance to manage the template instance.
+     */
+    popBack: function() {
       var instance = this._instances.pop();
       this._teardownInstance(instance);
       return instance;
     },
 
-    resetRender: function() {
+    /**
+     * Cleans the templatizer cache.
+     *
+     * Forces the templatizer to prepare again the template when `content` changes.
+     * The `ContentChangesObserverBehavior` makes this to happen automatically.
+     *
+     * @method forceTemplatize
+     */
+    cleanCache: function() {
       this._content = null;
       this.ctor = null;
     },
