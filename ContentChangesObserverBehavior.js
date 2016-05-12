@@ -15,7 +15,6 @@ var DomDeque = DomDeque || {};
    * @polymerBehavior DomDeque.ContentChangesObserverBehavior
    */
   var ContentChangesObserverBehaviorImpl = {
-
     attached: function() {
       this._contentObserver = Polymer.dom(this.content).observeNodes(
         this._onContentChanges.bind(this)

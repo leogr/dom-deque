@@ -38,17 +38,16 @@ var DomDeque = DomDeque || {};
 
     attached: function() {
       if (this._instances.length) {
-        // NOTE: ideally should not be async, but node can be attached
-        // when shady dom is in the act of distributing/composing so push it out
+        // NOTE: ideally should not be async, but node can be attached when shady dom is in the act of distributing/composing so push it out
         this.async(this._ensureInstances);
       }
     },
 
     detached: function() {
       if (!this.parentNode ||
-        (this.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE &&
-        (!Polymer.Settings.hasShadow ||
-        !(this.parentNode instanceof ShadowRoot)))) {
+          (this.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE &&
+            (!Polymer.Settings.hasShadow ||
+              !this.parentNode instanceof ShadowRoot))) {
         this._teardownInstances();
       }
     },
@@ -222,8 +221,12 @@ var DomDeque = DomDeque || {};
       }
     },
 
+    /**
+     * Removes all templates instances from its parent.
+     */
     _teardownInstances: function() {
-      for (var instance; instance = this._instances.pop(); ) {
+      var instance;
+      while (instance = this._instances.pop()) {
         this._teardownInstance(instance);
       }
     },
