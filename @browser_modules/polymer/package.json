@@ -1,0 +1,11 @@
+{
+  "name": "@polymer/polymer",
+  "version": "0.0.0",
+  "description": "-",
+  "repository": {
+    "type": "git",
+    "url": "-"
+  },
+  "readme": "-",
+  "_napaResolved": "https://github.com/polymer/polymer/archive/v1.4.0.tar.gz"
+}

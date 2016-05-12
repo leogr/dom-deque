@@ -1,0 +1,11 @@
+{
+  "name": "@polymer/paper-behaviors",
+  "version": "0.0.0",
+  "description": "-",
+  "repository": {
+    "type": "git",
+    "url": "-"
+  },
+  "readme": "-",
+  "_napaResolved": "https://github.com/polymerelements/paper-behaviors/archive/v1.0.11.tar.gz"
+}

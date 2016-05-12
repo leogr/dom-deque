@@ -1,0 +1,11 @@
+{
+  "name": "@polymer/iron-component-page",
+  "version": "0.0.0",
+  "description": "-",
+  "repository": {
+    "type": "git",
+    "url": "-"
+  },
+  "readme": "-",
+  "_napaResolved": "https://github.com/polymerelements/iron-component-page/archive/v1.1.6.tar.gz"
+}

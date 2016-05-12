@@ -1,0 +1,11 @@
+{
+  "name": "@polymer/iron-demo-helpers",
+  "version": "0.0.0",
+  "description": "-",
+  "repository": {
+    "type": "git",
+    "url": "-"
+  },
+  "readme": "-",
+  "_napaResolved": "https://github.com/polymerelements/iron-demo-helpers/archive/v1.2.2.tar.gz"
+}

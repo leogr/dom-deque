@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <title>dom-deque demo</title>
+
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../dom-deque.html">
+
+    <style></style>
+  </head>
+  <body>
+    <dom-deque-demo></dom-deque-demo>
+    <dom-module id="dom-deque-demo">
+      <template>
+        <style></style>
+      </template>
+
+      <script>
+      window.addEventListener('WebComponentsReady', function() {
+        Polymer({
+          is: 'dom-deque-demo',
+          properties: {}
+        });
+      });
+      </script>
+    </dom-module>
+  </body>
+</html>

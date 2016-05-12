@@ -1,0 +1,11 @@
+{
+  "name": "@polymer/paper-header-panel",
+  "version": "0.0.0",
+  "description": "-",
+  "repository": {
+    "type": "git",
+    "url": "-"
+  },
+  "readme": "-",
+  "_napaResolved": "https://github.com/polymerelements/paper-header-panel/archive/v1.1.5.tar.gz"
+}

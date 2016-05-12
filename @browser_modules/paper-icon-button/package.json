@@ -1,0 +1,11 @@
+{
+  "name": "@polymer/paper-icon-button",
+  "version": "0.0.0",
+  "description": "-",
+  "repository": {
+    "type": "git",
+    "url": "-"
+  },
+  "readme": "-",
+  "_napaResolved": "https://github.com/polymerelements/paper-icon-button/archive/v1.0.7.tar.gz"
+}

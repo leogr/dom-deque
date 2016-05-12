@@ -1,0 +1,11 @@
+{
+  "name": "@polymer/paper-material",
+  "version": "0.0.0",
+  "description": "-",
+  "repository": {
+    "type": "git",
+    "url": "-"
+  },
+  "readme": "-",
+  "_napaResolved": "https://github.com/polymerelements/paper-material/archive/v1.0.6.tar.gz"
+}
