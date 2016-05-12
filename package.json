@@ -49,7 +49,8 @@
     "@browser_modules/iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#v1.1.1",
     "@browser_modules/iron-validatable-behavior": "polymerelements/iron-validatable-behavior#v1.0.5",
     "@browser_modules/iron-form-element-behavior": "polymerelements/iron-form-element-behavior#v1.0.6",
-    "@browser_modules/paper-material": "polymerelements/paper-material#v1.0.6"
+    "@browser_modules/paper-material": "polymerelements/paper-material#v1.0.6",
+    "git-directory-deploy": "X1011/git-directory-deploy"
   },
   "dependencies": {},
   "devDependencies": {
@@ -57,6 +58,7 @@
     "napa": "2.3.x",
     "polylint": "2.10.x",
     "polyserve": "0.10.x",
+    "shx": "0.1.x",
     "validate-commit": "2.1.x",
     "web-component-tester": "4.2.x"
   },
@@ -70,6 +72,8 @@
     "fragment"
   ],
   "scripts": {
+    "gh-pages": "shx mkdir -p gh-pages/components/dom-deque && shx cp -R node_modules/@browser_modules/* gh-pages/components && shx ls *.{html,js} | xargs cp -t gh-pages/components/dom-deque && shx cp -R demo gh-pages/components/dom-deque && shx echo '<meta http-equiv=refresh content=\"0;URL=components/dom-deque/\">' > gh-pages/index.html && shx chmod +x node_modules/git-directory-deploy/deploy.sh",
+    "postgh-pages": "GIT_DEPLOY_DIR=gh-pages GIT_DEPLOY_BRANCH=gh-pages node_modules/git-directory-deploy/deploy.sh -m 'Deploy gh-pages'; shx rm -rf gh-pages",
     "postinstall": "napa --loglevel=silent --cache=false",
     "serve": "polyserve -c node_modules/@browser_modules -n dom-deque",
     "lint": "polylint -b node_modules/@browser_modules --no-recursion --input dom-deque.html"
