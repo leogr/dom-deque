@@ -53,13 +53,13 @@ var DomDeque = DomDeque || {};
     },
 
     /**
-     * Acces last template instance.
+     * Access last template instance.
      *
      * @readonly
      * @type {Polymer.Base}
      */
     get back() {
-      return this._instances[this.instances.length - 1];
+      return this._instances[this._instances.length - 1];
     },
 
     /**
