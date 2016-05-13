@@ -4,6 +4,20 @@
 
 [Demo + API docs](http://leogr.github.io/dom-deque)
 
+## Install
+
+With [npm](http://www.npmjs.com/package/dom-deque) do:
+
+```
+npm install dom-deque --save
+```
+
+Still use bower? No hassle.
+
+```
+bower install leogr/dom-deque polymer --save
+```
+
 ## Features
 
 ...
