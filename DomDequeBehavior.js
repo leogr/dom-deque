@@ -46,8 +46,8 @@ var DomDeque = DomDeque || {};
     detached: function() {
       if (!this.parentNode ||
           (this.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE &&
-            (!Polymer.Settings.hasShadow ||
-              !this.parentNode instanceof ShadowRoot))) {
+           (!Polymer.Settings.hasShadow ||
+            !(this.parentNode instanceof ShadowRoot)))) {
         this._teardownInstances();
       }
     },
@@ -206,8 +206,9 @@ var DomDeque = DomDeque || {};
       var parentNode = Polymer.dom(this).parentNode;
       // Guard against element being detached while render was queued
       if (parentNode) {
-        for (var i = 0; i < this._instances.length; i++) {
-          var c$ = this._instances[i]._children;
+        var parent = Polymer.dom(parentNode);
+        for (var j = 0; j < this._instances.length; j++) {
+          var c$ = this._instances[j]._children;
           if (c$ && c$.length) {
             // Detect case where dom-deque was re-attached in new position
             var lastChild = Polymer.dom(this).previousSibling;
