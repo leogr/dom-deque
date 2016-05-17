@@ -76,6 +76,9 @@
     "postgh-pages": "GIT_DEPLOY_DIR=gh-pages GIT_DEPLOY_BRANCH=gh-pages node_modules/git-directory-deploy/deploy.sh -m 'Deploy gh-pages'; shx rm -rf gh-pages",
     "postinstall": "napa --loglevel=silent --cache=false",
     "serve": "polyserve -c node_modules/@browser_modules -n dom-deque",
-    "lint": "polylint -b node_modules/@browser_modules --no-recursion --input dom-deque.html"
+    "lint": "polylint -b node_modules/@browser_modules --no-recursion --input dom-deque.html",
+    "docs": "npm run serve -- -o index.html",
+    "demo": "npm run serve -- -o demo/index.html",
+    "test": "npm run serve -- -o test/index.html"
   }
 }
