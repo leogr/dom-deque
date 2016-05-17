@@ -79,14 +79,7 @@ var DomDeque = DomDeque || {};
      * @return {Polymer.Base} Instance to manage the new template instance.
      */
     pushBack: function() {
-      var instance = this._makeInstance();
-      if (instance) {
-        this._instances.push(instance);
-        if (this._instances.length > this.maxSize) {
-          this.popFront();
-        }
-      }
-      return instance;
+      return this._makeInstance(false);
     },
 
     /**
@@ -96,14 +89,7 @@ var DomDeque = DomDeque || {};
      * @return {Polymer.Base} Instance to manage the new template instance.
      */
     pushFront: function() {
-      var instance = this._makeInstance(true);
-      if (instance) {
-        this._instances.unshift(instance);
-        if (this._instances.length > this.maxSize) {
-          this.popBack();
-        }
-      }
-      return instance;
+      return this._makeInstance(true);
     },
 
     /**
@@ -113,9 +99,7 @@ var DomDeque = DomDeque || {};
      * @return {Polymer.Base} Instance to manage the removed template instance.
      */
     popFront: function() {
-      var instance = this._instances.shift();
-      this._teardownInstance(instance);
-      return instance;
+      return this._removeInstance(true);
     },
 
     /**
@@ -125,9 +109,7 @@ var DomDeque = DomDeque || {};
      * @return {Polymer.Base} Instance to manage the removed template instance.
      */
     popBack: function() {
-      var instance = this._instances.pop();
-      this._teardownInstance(instance);
-      return instance;
+      return this._removeInstance(false);
     },
 
     /**
@@ -152,9 +134,10 @@ var DomDeque = DomDeque || {};
     },
 
     /**
-     * Renders the current template content.
+     * Enqueues and renders the current template content.
+     * Furthermore it fires the dom-change event.
      *
-     * @param {?boolean} atFront Whether the instance must be made at front or not.
+     * @param {boolean} atFront Whether the instance must be made at front or not.
      * @return {Polymer.Base} Instance of the current template content.
      */
     _makeInstance: function(atFront) {
@@ -170,6 +153,7 @@ var DomDeque = DomDeque || {};
         var insertionPoint = this;
 
         if (atFront) {
+          // Compute insertion point
           for (var i = 0; i < this._instances.length; i++) {
             var nInstance = this._instances[i];
             if (nInstance._children[0]) {
@@ -177,9 +161,36 @@ var DomDeque = DomDeque || {};
               break;
             }
           }
+
+          // Enqueue at front
+          this._instances.unshift(instance);
+        } else {
+          // Enqueue at back
+          this._instances.push(instance);
+        }
+        // Resize queue to the max limit
+        if (this._instances.length > this.maxSize) {
+          this._teardownInstance(atFront ? this._instances.pop() : this._instances.shift());
         }
 
         parent.insertBefore(instance.root, insertionPoint);
+        this.fire('dom-change');
+        return instance;
+      }
+    },
+
+    /**
+     * Dequeues and teardowns a template instance.
+     * Furthermore it fires dom-change event.
+     *
+     * @param      {boolean}  atFront  Whether the instance must be dequeued at front or not.
+     * @return     {Polymer.Base|undefined}  Removed instance.
+     */
+    _removeInstance: function(atFront) {
+      if (this._instances.length) {
+        var instance = atFront ? this._instances.shift() : this._instances.pop();
+        this._teardownInstance(instance);
+        this.fire('dom-change');
         return instance;
       }
     },
