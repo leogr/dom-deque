@@ -3,8 +3,16 @@
 var DomDeque = DomDeque || {};
 
 (function() {
+  var setHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+
   /**
-   * The `DomDeque.Templatizer`
+   * The `DomDeque.Templatizer` is an extension of templatizer.
+   * It allows the dynamic replacement of the content making the late-binding work (also at instance time).
+   *
+   * By default the Polymer parses annotations and prepare bindings at registration time,
+   * augumenting custom elements with sugar.
+   * This behavior make the same feature set work also at runtime,
+   * allowing the user to replace the template content at any time with no feature loss.
    *
    * Example:
    *     // TODO
@@ -15,7 +23,22 @@ var DomDeque = DomDeque || {};
    * @polymerBehavior DomDeque.Templatizer
    */
   var TemplatizerImpl = {
+    /**
+     * Sets the HTML syntax describing the element descendants.
+     * Clearly, automatically untemplatizes current template.
+     *
+     * @param      {string}  text  The serialized HTML to replace with.
+     */
+    set innerHTML(text) {
+      this.untemplatize(this);
+      setHTML.call(this, text);
+    },
 
+    /**
+     * Cleans all template caches.
+     *
+     * @param      {HTMLTemplateElement}  template  The template
+     */
     untemplatize: function(template) {
       delete template._templatized;
       delete template._content;
@@ -24,73 +47,75 @@ var DomDeque = DomDeque || {};
       delete template.content._notes;
     },
 
-    reset: function() {
-      this.replaceContent('');
-    },
-
-    replaceContent: function(contentHTML) {
-      this.untemplatize(this);
-      Polymer.dom(this).node.innerHTML = contentHTML;
-    },
-
+    /**
+     * Prepares a template containing Polymer bindings by generating
+     * a constructor for an anonymous `Polymer.Base` subclass to serve as the
+     * binding context for the provided template.
+     *
+     * Use `this.stamp` to create instances of the template context containing
+     * a `root` fragment that may be stamped into the DOM.
+     *
+     * When content changes - i.e., by `contentHTML` - we ignore template cache
+     * and prepare effects and bindings for the new content.
+     *
+     * @method templatize
+     * @param {HTMLTemplateElement} template The template to process.
+     */
     templatize: function(template) {
-
       var dataHost = this.dataHost;
+      // When content cache is missing and a data host exists
+      // We add new properties and effects to the data host
       if (!this._content && dataHost && dataHost._template) {
-
-        // 1st step: add new properties and effects to dataHost
-
-        // Backup and reset _bindListener to avoid re-attaching the same listeners later
+        // Backup and reset already  bound listeners to avoid re-attaching them later
         var _bindListeners = dataHost._bindListeners;
         dataHost._bindListeners = [];
 
-        // Force dataHost to parse new annotations
+        // Force data host to parse new annotations
         Polymer.dom(dataHost._template).node.innerHTML = Polymer.dom(this).node.outerHTML;
         dataHost._prepAnnotations();
         dataHost._prepEffects();
 
-        // Make _propertyEffects diffs
-        var propertyEffects = dataHost._propertyEffects;
-        var _propertyEffects = {};
-        var _allProps = {};
-        for (var k in propertyEffects) {
+        // Backup existing property effects (from the data host), for later usage
+        // Keep only unseen property effects
+        var _propertyEffects = dataHost._propertyEffects;
+        var existingPropertyEffects = {};
+        var allProps = {};
+        for (var k in _propertyEffects) {
           var pd = Object.getOwnPropertyDescriptor(dataHost, k);
           if (pd && !pd.configurable) {
-            _propertyEffects[k] = propertyEffects[k];
-            delete propertyEffects[k];
+            existingPropertyEffects[k] = _propertyEffects[k];
+            delete _propertyEffects[k];
           }
-          _allProps[k] = true;
+          allProps[k] = true;
         }
 
         // Create new bindings
-        Polymer.Bind.createBindings(dataHost); //dataHost._prepBindings();
+        Polymer.Bind.createBindings(dataHost); // Called within dataHost._prepBindings();
 
         // Bind new listeners
         Polymer.Bind.setupBindListeners(dataHost);
 
-        // Restore _propertyEffects
+        // Restore pre-existing property effects
         for (var k in _propertyEffects) {
-          propertyEffects[k] = _propertyEffects[k];
+          _propertyEffects[k] = existingPropertyEffects[k];
         }
 
-        // Restore _bindListener
-        _bindListeners.push.apply(_bindListeners, dataHost._bindListeners);
+        // Restore pre-existing bound listeners
+        if (_bindListeners) {
+          _bindListeners.push.apply(_bindListeners, dataHost._bindListeners);
+        }
         dataHost._bindListeners = _bindListeners;
 
-        // 2st step: templatize the template and extend this
-        this.content._parentProps = _allProps;
-        Polymer.Templatizer.templatize.call(this, template);
-
-        // Finally, restore all props
-        this.content._parentProps = this._parentProps = _allProps;
-
-      } else {
-        Polymer.Templatizer.templatize.call(this, template);
+        // Tell to Polymer's templatize to use all the parent properties
+        this.content._parentProps = allProps;
       }
+
+      // Finally, templatize the template and extend the "this" object
+      Polymer.Templatizer.templatize.call(this, template);
     },
 
-    // Similar to Polymer.Base.extend, but retains any previously set instance
-    // values (_propertySetter back on instance once accessor is installed)
+    // Behaves similarly to Polymer.Base.extend but retains previously set instance values
+    // (_propertySetter back on instance once accessor is installed).
     _extendTemplate: function(template, proto) {
       var n$ = Object.getOwnPropertyNames(proto);
       if (proto._propertySetter) {
@@ -105,14 +130,13 @@ var DomDeque = DomDeque || {};
           Object.defineProperty(template, n, pd);
         } catch (e) {
           // Silently ignore property re-definition
-          //console.log(this, '_extendTemplate', e);
+          // console.log(this, '_extendTemplate', e);
         }
         if (val !== undefined) {
           template._propertySetter(n, val);
         }
       }
     }
-
   };
 
   DomDeque.Templatizer = [
