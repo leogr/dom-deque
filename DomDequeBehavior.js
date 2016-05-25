@@ -234,7 +234,7 @@ var DomDeque = DomDeque || {};
     },
 
     /**
-     * Implements extension point from Templatizer mixin.
+     * Implements extension point from `Polymer.Templatizer` mixin.
      * Called as side-effect of a host property change,
      * responsible for notifying `parent.<prop>` property change on each instance.
      */
@@ -245,7 +245,7 @@ var DomDeque = DomDeque || {};
     },
 
     /**
-     * Implements extension point from Templatizer.
+     * Implements extension point from `Polymer.Templatizer` mixin.
      * Called as side-effect of a host path change,
      * responsible for notifying `parent.<path>` path change on each instance.
      */
