@@ -113,16 +113,6 @@ var DomDeque = DomDeque || {};
     },
 
     /**
-     * Cleans the templatizer cache.
-     * Forces the templatizer to prepare again the template when `content` changes.
-     * The `ContentChangesObserverBehavior` makes this to happen automatically.
-     */
-    cleanCache: function() {
-      this._content = null;
-      this.ctor = null;
-    },
-
-    /**
      * Resizes the queue size.
      *
      * @param {number} n New maximum size
@@ -267,7 +257,7 @@ var DomDeque = DomDeque || {};
   };
 
   DomDeque.DomDequeBehavior = [
-    Polymer.Templatizer,
+    DomDeque.Templatizer,
     DomDequeBehaviorImpl
   ];
 })();
