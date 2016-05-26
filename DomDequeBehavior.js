@@ -4,12 +4,21 @@ var DomDeque = DomDeque || {};
 
 (function() {
   /**
-   * The `DomDeque.DomDequeBehavior` behavior ...
+   * The `DomDeque.DomDequeBehavior` implements a **double-ended queue** (i.e., deque) of template instances.
    *
-   * Example:
-   *     // TODO
+   * It is intended to be used with `<template>` **type extensions**.
    *
-   * ...
+   * When a `<template>` use it, it is always able to **stamp/insert** or **remove**
+   * **one or more** its own **instances** at the front or at the back of the queue.
+   *
+   * Since this behavior uses the custom `DomDeque.Templatizer` it makes the `<template>`
+   * able to **re-templatize its content when changes** (e.g., using `innerHTML`).
+   *
+   * Note that, similar to Polymer templates, the **insertion point** of instances within the parent node
+   * is relative to the original position of the `<template>` when attached.
+   * Pushing instances at **front** insert them at the insertion point (above others).
+   * Otherwise, pushing at the **back** insert them after the last instance position (below others).
+   * Removing instances at front/back respects the same positioning behavior.
    *
    * @demo demo/index.html
    * @polymerBehavior DomDeque.DomDequeBehavior
