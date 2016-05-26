@@ -6,18 +6,14 @@ var DomDeque = DomDeque || {};
   var setHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
 
   /**
-   * The `DomDeque.Templatizer` is an extension of templatizer.
-   * It allows the dynamic replacement of the content making the late-binding work (also at instance time).
+   * The `DomDeque.Templatizer` is an extension of `Polymer.templatizer`.
    *
-   * By default the Polymer parses annotations and prepare bindings at registration time,
-   * augumenting custom elements with sugar.
-   * This behavior make the same feature set work also at runtime,
-   * allowing the user to replace the template content at any time with no feature loss.
+   * It allows the **dynamic replacement of the content** making the **late-binding** to work (also at instance time).
    *
-   * Example:
-   *     // TODO
-   *
-   * ...
+   * By default Polymer parses annotations and prepare bindings at registration time,
+   * augumenting custom elements.
+   * This behavior make the same feature set to work also at **runtime**,
+   * allowing the user to **replace the template content at any time with no features loss**.
    *
    * @demo demo/index.html
    * @polymerBehavior DomDeque.Templatizer
@@ -25,7 +21,8 @@ var DomDeque = DomDeque || {};
   var TemplatizerImpl = {
     /**
      * Sets the HTML syntax describing the element descendants.
-     * Clearly, automatically untemplatizes current template.
+     *
+     * It automatically untemplatizes the current template.
      *
      * @param      {string}  text  The serialized HTML to replace with.
      */
@@ -35,9 +32,9 @@ var DomDeque = DomDeque || {};
     },
 
     /**
-     * Cleans all template caches.
+     * Cleans all the template caches.
      *
-     * @param      {HTMLTemplateElement}  template  The template
+     * @param {HTMLTemplateElement} template
      */
     untemplatize: function(template) {
       delete template._templatized;
@@ -59,7 +56,7 @@ var DomDeque = DomDeque || {};
      * and prepare effects and bindings for the new content.
      *
      * @method templatize
-     * @param {HTMLTemplateElement} template The template to process.
+     * @param {HTMLTemplateElement} template
      */
     templatize: function(template) {
       var dataHost = this.dataHost;
@@ -114,8 +111,13 @@ var DomDeque = DomDeque || {};
       Polymer.Templatizer.templatize.call(this, template);
     },
 
-    // Behaves similarly to Polymer.Base.extend but retains previously set instance values
-    // (_propertySetter back on instance once accessor is installed).
+    /**
+     * Behaves similarly to `Polymer.Base.extend` but retains previously set instance values.
+     * Note that `_propertySetter` come back on instance once accessor is installed.
+     *
+     * @param {HTMLTemplateElement} template
+     * @param {Object} proto
+     */
     _extendTemplate: function(template, proto) {
       var n$ = Object.getOwnPropertyNames(proto);
       if (proto._propertySetter) {
