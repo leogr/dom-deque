@@ -6,25 +6,85 @@
     <title>dom-deque demo</title>
 
     <link rel="import" href="../../polymer/polymer.html">
+    <script>Polymer.Settings.lazyRegister = true;</script>
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+    <link rel="import" href="../../paper-styles/typography.html">
+    <link rel="import" href="../../paper-styles/color.html">
     <link rel="import" href="../dom-deque.html">
-
-    <style></style>
+    <style is="custom-style" include="demo-pages-shared-styles"></style>
+    <style>
+      textarea {
+        width: 100%;
+        min-height: 150px;
+      }
+      .instance {
+        border: 1px solid cornflowerblue;
+        min-height: 1px;
+        margin-bottom: 1px;
+      }
+    </style>
   </head>
   <body>
-    <dom-deque-demo></dom-deque-demo>
-    <dom-module id="dom-deque-demo">
-      <template>
-        <style></style>
-      </template>
 
-      <script>
-      window.addEventListener('WebComponentsReady', function() {
-        Polymer({
-          is: 'dom-deque-demo',
-          properties: {}
-        });
-      });
-      </script>
-    </dom-module>
+  <demo-snippet>
+    <template>
+      <dom-module id="dom-deque-demo">
+        <template>
+          <h4>Methods</h4>
+          <button on-tap="pushFront">pushFront</button><button on-tap="popFront">popFront()</button> /
+          <button on-tap="pushBack">pushBack</button><button on-tap="popBack">popBack</button>
+          <h4>Template content</h4>
+          <textarea id="content" value="{{content::input}}"></textarea>
+          <template is="dom-deque" id="deque"></template>
+        </template>
+
+        <script>
+          Polymer({
+            is: "dom-deque-demo",
+
+            properties: {
+              content: {
+                type: String,
+                observer: '_contentChanged',
+                value: 'I\'m your template content! You can use <button on-tap="sayHello">annotated listener</button>' +
+                       'or bind a variable (i.e. [[variable]]) to any item (i.e. <input type="text" value="{{variable::input}}">). \n\n' +
+                       'You can lazily import (i.e. <link rel="import" href="../../paper-button/paper-button.html">) ' +
+                       'your elements and use it: <paper-button on-tap="sayHello">Say Hello!</paper-button>. \n\n' +
+                       'Then, you can stamp a new instance of this template <button on-tap="pushFront">on top</button> ' +
+                       'or <button on-tap="pushBack">at the end</button>. \n\n<br>\n\n' +
+                       'Once an instance has been stamped you can test that annotations are working. ' +
+                       'Finally, try to <b>change the template content</b> then <b>stamp again</b>. ' +
+                       'Both new and old annotations will work!'
+              }
+            },
+            _contentChanged: function(content) {
+              this.$.deque.innerHTML = '<div class="instance">' + content + '</div>';
+            },
+            pushFront: function() {
+              this.$.deque.pushFront();
+            },
+            popFront: function() {
+              this.$.deque.popFront();
+            },
+            pushBack: function() {
+              this.$.deque.pushBack();
+            },
+            popBack: function() {
+              this.$.deque.popBack();
+            },
+            sayHello: function() {
+              window.alert('Hello!');
+            }
+          })
+        </script>
+      </dom-module>
+      <dom-deque-demo></dom-deque-demo>
+    </template>
+  </demo-snippet>
+
+
+
   </body>
 </html>
