@@ -128,7 +128,7 @@ var DomDeque = DomDeque || {};
      * @param {number} n New maximum size
      */
     _onMaxSizeChanged: function(n) {
-      for (var i = this._instances.length; i >= n; i--) {
+      for (var i = this._instances.length; i > n; i--) {
         this.popBack();
       }
     },
