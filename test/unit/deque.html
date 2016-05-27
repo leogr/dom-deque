@@ -1,0 +1,276 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../web-component-tester/browser.js"></script>
+  <script src="../../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../../promise-polyfill/promise-polyfill.html">
+  <link rel="import" href="../../dom-deque.html">
+  <link rel="import" href="../../../test-fixture/test-fixture.html">
+
+  <link rel="import" href="../asset/test-elements.html">
+</head>
+<body>
+
+  <test-fixture id="simple">
+    <template>
+      <div id="container">
+        <template is="dom-deque" id="Q">
+          <test-counter></test-counter>
+        </template>
+      </div>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('deque', function() {
+      var el;
+      setup(function() {
+        el = fixture('simple');
+      });
+
+      suite('should attach/detach', function() {
+        var origQ;
+        setup(function() {
+          origQ = Q;
+        });
+
+        test('teardowning instances on detach', function() {
+          assert.equal(el, container);
+          Q.innerHTML = '<div id="d0">0</div>';
+          Q.pushBack();
+          Q.innerHTML = '<div id="d1">1</div>';
+          Q.pushBack();
+          var d0 = el.querySelector('div#d0');
+          var d1 = el.querySelector('div#d1');
+
+          el.removeChild(Q);
+          assert.equal(0, el.children.length);
+          assert.isNull(d0.parentNode);
+          assert.isNull(d1.parentNode);
+        });
+
+        test('ensuring instances on attach', function() {
+          assert.equal(el, container);
+          Q.innerHTML = '<div id="d0">0</div>';
+          Q.pushBack();
+          Q.innerHTML = '<div id="d1">1</div>';
+          Q.pushBack();
+          var d0 = el.querySelector('div#d0');
+          var d1 = el.querySelector('div#d1');
+
+          assert.equal(el, d0.parentNode);
+          assert.equal(el, d1.parentNode);
+        });
+
+        teardown(function() {
+          el.appendChild(origQ);
+        });
+      });
+
+      suite('should be able to insert', function() {
+        test('at back', function() {
+          assert.equal(el, container);
+          Q.pushBack();
+          var counter = el.querySelector('test-counter');
+          assert.equal(el.firstElementChild, counter);
+          assert.equal(1, counter.count);
+        });
+
+        test('at front', function() {
+          assert.equal(el, container);
+          Q.pushFront();
+          var counter = el.querySelector('test-counter');
+          assert.equal(el.firstElementChild, counter);
+          assert.equal(1, counter.count);
+        });
+
+        test('more times respecting order', function() {
+          assert.equal(el, container);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushBack();
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushBack();
+          assert.equal(Q._instances[0], i0);
+          assert.equal(Q._instances[1], i1);
+          assert.equal(Q._instances[2], i2);
+          var tc0 = el.querySelector('test-counter#tc0');
+          var tc1 = el.querySelector('test-counter#tc1');
+          var tc2 = el.querySelector('test-counter#tc2');
+          assert.equal(Q._instances[0]._children[0], tc0);
+          assert.equal(Q._instances[1]._children[0], tc1);
+          assert.equal(Q._instances[2]._children[0], tc2);
+          assert.equal(tc0, el.firstElementChild);
+          assert.equal(tc0, el.children.tc0);
+          assert.equal(tc1, el.children.tc1);
+          assert.equal(tc1, el.firstElementChild.nextSibling);
+          assert.equal(tc2, el.children.tc2);
+          assert.equal(tc2, el.firstElementChild.nextSibling.nextSibling);
+          assert.equal(3, el.children.tc0.count);
+          assert.equal(3, el.children.tc1.count);
+          assert.equal(3, el.children.tc2.count);
+        });
+
+        teardown(function() {
+          el.querySelector('test-counter').count = 0;
+        });
+      });
+
+      suite('should be able to delete', function() {
+        test('at back', function() {
+          assert.equal(el, container);
+          Q.pushFront();
+          var counter = el.querySelector('test-counter');
+          Q.popBack();
+          assert.isNull(counter.parentNode);
+        });
+
+        test('at front', function() {
+          assert.equal(el, container);
+          Q.pushFront();
+          var counter = el.querySelector('test-counter');
+          Q.popFront();
+          assert.isNull(counter.parentNode);
+        });
+
+        test('more times updating order', function() {
+          assert.equal(el, container);
+          assert.equal(el, container);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushBack();
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushBack();
+          var tc0 = el.querySelector('test-counter#tc0');
+          var tc1 = el.querySelector('test-counter#tc1');
+          var tc2 = el.querySelector('test-counter#tc2');
+
+          Q.popFront();
+          assert.isNull(tc0.parentNode);
+          assert.equal(tc1.parentNode, el);
+          assert.equal(tc2.parentNode, el);
+
+          assert.equal(Q._instances[0]._children[0], tc1);
+          assert.equal(Q._instances[1]._children[0], tc2);
+          assert.equal(tc1, el.firstElementChild);
+          assert.equal(tc2, el.firstElementChild.nextSibling);
+          assert.equal(tc1, el.children.tc1);
+          assert.equal(tc2, el.children.tc2);
+        });
+      });
+
+      suite('should fire dom-change', function() {
+        test('when inserting', function(done) {
+          assert.equal(el, container);
+          el.addEventListener('dom-change', function(event) {
+            assert.equal(event.target, Q);
+            done();
+          });
+          Q.pushFront();
+        });
+
+        test('when deleting', function(done) {
+          assert.equal(el, container);
+          var num = 0;
+          el.addEventListener('dom-change', function(event) {
+            assert.equal(event.target, Q);
+            num++;
+            if (num === 2) {
+              done();
+            }
+          });
+          Q.pushBack();
+          Q.popFront();
+        });
+      });
+
+      suite('should allow access', function() {
+        test('to front instance', function() {
+          assert.equal(el, container);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushBack();
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+          assert.equal(el.firstElementChild, el.querySelector('test-counter#tc0'));
+          assert.equal(Q.front, i0);
+        });
+
+        test('to back instance', function() {
+          assert.equal(el, container);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushBack();
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+          assert.equal(Q.back, i2);
+        });
+      });
+
+      suite('should have a maximum number of elements', function() {
+        test('infinity by default', function() {
+          assert.equal(el, container);
+          assert.equal(Q.maxSize, Infinity);
+        });
+
+        test('contains up to `maxSize` elements', function() {
+          assert.equal(el, container);
+          Q.maxSize = 3;
+          Q.innerHTML = '<test-counter id="tc3">3</test-counter>';
+          var i3 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+
+          // | TC0 | TC1 | TC2 | TC3 |
+          // | TC0 | TC1 | TC2 | xxx |
+
+          assert.equal(Q.maxSize, 3);
+          assert.equal(Q._instances.length, 3);
+          assert.equal(Q._instances[0], i0);
+          assert.equal(Q._instances[Q.maxSize - 1], i2);
+          assert.equal(Q._instances[0]._children[0], el.querySelector('test-counter#tc0'));
+          assert.equal(Q._instances[Q.maxSize - 1]._children[0], el.querySelector('test-counter#tc2'));
+        });
+
+        test('supports reducing the number of elements', function() {
+          assert.equal(el, container);
+          Q.maxSize = 3;
+          Q.innerHTML = '<test-counter id="tc3">3</test-counter>';
+          var i3 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushFront();
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+
+          // | TC0 | TC1 | TC2 | TC3 |
+          // | TC0 | TC1 | TC2 | xxx |
+          Q.maxSize = 2;
+          // | TC0 | TC1 | xxx | xxx |
+
+          assert.equal(Q.maxSize, 2);
+          assert.equal(Q._instances.length, 2);
+          assert.equal(Q._instances[0], i0);
+          assert.equal(Q._instances[Q.maxSize - 1], i1);
+          assert.equal(Q._instances[0]._children[0], el.querySelector('test-counter#tc0'));
+          assert.equal(Q._instances[1]._children[0], el.querySelector('test-counter#tc1'));
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
