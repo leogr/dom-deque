@@ -1,0 +1,25 @@
+<link rel="import" href="../../dom-deque.html">
+
+<dom-module id="test-counter">
+  <template>
+    <content></content>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'test-counter',
+    statics: {
+      count: 0
+    },
+    created: function() {
+      this.statics.count++;
+    },
+    get count() {
+      return this.statics.count;
+    },
+    set count(n) {
+      this.statics.count = n;
+    }
+  });
+  </script>
