@@ -62,13 +62,14 @@ var DomDeque = DomDeque || {};
       var dataHost = this.dataHost;
       // When content cache is missing and a data host exists
       // We add new properties and effects to the data host
-      if (!this._content && dataHost && dataHost._template) {
+      if (!template._content && dataHost && dataHost._template) {
+        
         // Backup and reset already  bound listeners to avoid re-attaching them later
         var _bindListeners = dataHost._bindListeners;
         dataHost._bindListeners = [];
 
         // Force data host to parse new annotations
-        Polymer.dom(dataHost._template).node.innerHTML = Polymer.dom(this).node.outerHTML;
+        dataHost._template.innerHTML = template.outerHTML;
         dataHost._prepAnnotations();
         dataHost._prepEffects();
 

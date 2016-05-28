@@ -48,7 +48,7 @@ var DomDeque = DomDeque || {};
     attached: function() {
       if (this._instances.length) {
         // NOTE: ideally should not be async, but node can be attached when shady dom is in the act of distributing/composing so push it out
-        this.async(this._ensureInstances);
+        this.async(this._attachInstances);
       }
     },
 
@@ -57,7 +57,7 @@ var DomDeque = DomDeque || {};
           (this.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE &&
            (!Polymer.Settings.hasShadow ||
             !(this.parentNode instanceof ShadowRoot)))) {
-        this._teardownInstances();
+        this._detachInstances();
       }
     },
 
@@ -88,7 +88,7 @@ var DomDeque = DomDeque || {};
      * @return {Polymer.Base} Instance to manage the new template instance.
      */
     pushBack: function() {
-      return this._makeInstance(false);
+      return this._renderInstance(false);
     },
 
     /**
@@ -98,7 +98,7 @@ var DomDeque = DomDeque || {};
      * @return {Polymer.Base} Instance to manage the new template instance.
      */
     pushFront: function() {
-      return this._makeInstance(true);
+      return this._renderInstance(true);
     },
 
     /**
@@ -139,7 +139,7 @@ var DomDeque = DomDeque || {};
      * @param {boolean} atFront Whether the instance must be made at front or not.
      * @return {Polymer.Base} Instance of the current template content.
      */
-    _makeInstance: function(atFront) {
+    _renderInstance: function(atFront) {
       if (!this.ctor) {
         this.templatize(this);
       }
@@ -169,7 +169,7 @@ var DomDeque = DomDeque || {};
         }
         // Resize queue to the max limit
         if (this._instances.length > this.maxSize) {
-          this._teardownInstance(atFront ? this._instances.pop() : this._instances.shift());
+          this._detachInstance(atFront ? this._instances.pop() : this._instances.shift());
         }
 
         parent.insertBefore(instance.root, insertionPoint);
@@ -179,7 +179,7 @@ var DomDeque = DomDeque || {};
     },
 
     /**
-     * Dequeues and teardowns a template instance.
+     * Dequeues and detaches a template instance.
      * Furthermore it fires dom-change event.
      *
      * @param      {boolean}  atFront  Whether the instance must be dequeued at front or not.
@@ -188,7 +188,7 @@ var DomDeque = DomDeque || {};
     _removeInstance: function(atFront) {
       if (this._instances.length) {
         var instance = atFront ? this._instances.shift() : this._instances.pop();
-        this._teardownInstance(instance);
+        this._detachInstance(instance);
         this.fire('dom-change');
         return instance;
       }
@@ -197,9 +197,9 @@ var DomDeque = DomDeque || {};
     /**
      * Removes a template instance from its parent.
      *
-     * @param {Polymer.Base} instance Instance to tear down.
+     * @param {Polymer.Base} instance Instance to detach.
      */
-    _teardownInstance: function(instance) {
+    _detachInstance: function(instance) {
       if (instance) {
         var c$ = instance._children;
         if (c$ && c$.length) {
@@ -212,7 +212,10 @@ var DomDeque = DomDeque || {};
       }
     },
 
-    _ensureInstances: function() {
+    /**
+     * Attaches all templates instances to the current parent.
+     */
+    _attachInstances: function() {
       var parentNode = Polymer.dom(this).parentNode;
       // Guard against element being detached while render was queued
       if (parentNode) {
@@ -235,10 +238,10 @@ var DomDeque = DomDeque || {};
     /**
      * Removes all templates instances from its parent.
      */
-    _teardownInstances: function() {
-      var instance;
-      while (instance = this._instances.pop()) {
-        this._teardownInstance(instance);
+    _detachInstances: function() {
+      var l$ = this._instances.length;
+      for (var i=0; i < l$; i++) {
+        this._detachInstance(this._instances[i]);
       }
     },
 
