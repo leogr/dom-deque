@@ -66,12 +66,17 @@ var DomDeque = DomDeque || {};
       // We add new properties and effects to the data host
       if (!template._content && dataHost && dataHost._template) {
 
-        // Backup and reset already  bound listeners to avoid re-attaching them later
-        var _bindListeners = dataHost._bindListeners;
+        // Setup instance specific properties
         dataHost._bindListeners = [];
+        dataHost._notes = []; // old notes are already processed
+        dataHost._propertyEffects = Polymer.Base.mixin({}, dataHost._propertyEffects);
 
-        // Force data host to parse new annotations
-        dataHost._template.innerHTML = template.outerHTML;
+        // Swap template with a temporary one in order to parse new content
+        var tmp = document.createElement('template');
+        tmp.innerHTML = template.outerHTML;
+        dataHost._template = tmp;
+
+        // Prepare new annotations and new effects
         dataHost._prepAnnotations();
         dataHost._prepEffects();
 
@@ -80,34 +85,65 @@ var DomDeque = DomDeque || {};
         var _propertyEffects = dataHost._propertyEffects;
         var existingPropertyEffects = {};
         var allProps = {};
+        var config = {};
         for (var k in _propertyEffects) {
-          var pd = Object.getOwnPropertyDescriptor(dataHost, k);
-          if (pd && !pd.configurable) {
+
+          // We assume that when a property has its own descriptor that cannot be changed
+          var pd;
+          if ((pd = Object.getOwnPropertyDescriptor(dataHost, k)) && !pd.configurable) {
             existingPropertyEffects[k] = _propertyEffects[k];
             delete _propertyEffects[k];
           }
+
+          // Preserve data
+          if (dataHost[k] !== undefined) {
+            config[k] = dataHost[k];
+          }
+
+          // When a property already exists in the data host but the template did not have it yet,
+          // the property's value is not propagated to the template until the next notification.
+          // So we need to set it now.
+          if (dataHost[k] !== undefined && template[this._parentPropPrefix + k] === undefined) {
+            template[this._parentPropPrefix + k] = dataHost[k];
+          }
+
           allProps[k] = true;
         }
 
         // Create new bindings
         Polymer.Bind.createBindings(dataHost); // Called within dataHost._prepBindings();
 
-        // Bind new listeners
-        Polymer.Bind.setupBindListeners(dataHost);
-
-        // Restore pre-existing property effects
-        for (var k in _propertyEffects) {
-          _propertyEffects[k] = existingPropertyEffects[k];
-        }
-
-        // Restore pre-existing bound listeners
-        if (_bindListeners) {
-          _bindListeners.push.apply(_bindListeners, dataHost._bindListeners);
+        // Prepare listeners for new bindings only
+        var _bindListeners = [];
+        var index = dataHost._nodes.indexOf(template);
+        for (var i= 0, bl, bl$ = dataHost._bindListeners; bl = bl$[i]; i++) {
+          if (_propertyEffects[bl.path]) {
+            bl.index = index;
+            _bindListeners.push(bl);
+          }
         }
         dataHost._bindListeners = _bindListeners;
 
+        // Setup listeners for new bindings
+        Polymer.Bind.setupBindListeners(dataHost);
+
+        // Restore pre-existing property effects list
+        for (var k in existingPropertyEffects) {
+          _propertyEffects[k] = existingPropertyEffects[k];
+        }
+
+        // Restore data
+        for (var k in config) {
+          if (dataHost[k] !== config[k]) {
+            dataHost[k] = config[k];
+          }
+        }
+
         // Tell to Polymer's templatize to use all the parent properties
         this.content._parentProps = allProps;
+
+        // Removing _template from instance, we restore the _template from proto
+        delete dataHost._template;
       }
 
       // Finally, templatize the template and extend the "this" object
