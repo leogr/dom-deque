@@ -1,3 +1,5 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
 'use strict';
 
 var DomDeque = DomDeque || {};
@@ -63,7 +65,7 @@ var DomDeque = DomDeque || {};
       // When content cache is missing and a data host exists
       // We add new properties and effects to the data host
       if (!template._content && dataHost && dataHost._template) {
-        
+
         // Backup and reset already  bound listeners to avoid re-attaching them later
         var _bindListeners = dataHost._bindListeners;
         dataHost._bindListeners = [];
@@ -147,3 +149,4 @@ var DomDeque = DomDeque || {};
     TemplatizerImpl
   ];
 })();
+</script>
