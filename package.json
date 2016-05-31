@@ -19,10 +19,10 @@
   "dependencies": {},
   "devDependencies": {
     "bower": "1.7.x",
-    "git-directory-deploy": "1.5.x",
     "git-scripts": "0.2.x",
     "polylint": "2.10.x",
     "polyserve": "0.10.x",
+    "request": "^2.72.0",
     "shx": "0.1.x",
     "validate-commit": "2.1.x",
     "web-component-tester": "4.2.x"
@@ -37,9 +37,10 @@
     "fragment"
   ],
   "scripts": {
-    "gh-pages": "shx mkdir -p gh-pages/components/dom-deque && shx cp -R bower_components/* gh-pages/components && shx ls *.{html,js} | xargs cp -t gh-pages/components/dom-deque && shx cp -R demo gh-pages/components/dom-deque && shx echo '<meta http-equiv=refresh content=\"0;URL=components/dom-deque/\">' > gh-pages/index.html && shx chmod +x node_modules/git-directory-deploy/deploy.sh",
-    "postgh-pages": "GIT_DEPLOY_DIR=gh-pages GIT_DEPLOY_BRANCH=gh-pages node_modules/git-directory-deploy/deploy.sh -m 'Deploy gh-pages'; shx rm -rf gh-pages",
-    "postinstall": "bower install",
+    "gh-pages": "shx mkdir -p gh-pages/components/dom-deque && shx cp -R bower_components/* gh-pages/components && shx ls *.{html,js} | xargs cp -t gh-pages/components/dom-deque && shx cp -R demo gh-pages/components/dom-deque && shx echo '<meta http-equiv=refresh content=\"0;URL=components/dom-deque/\">' > gh-pages/index.html && shx chmod +x node_modules/.bin/git-directory-deploy",
+    "postgh-pages": "GIT_DEPLOY_DIR=gh-pages GIT_DEPLOY_BRANCH=gh-pages git-directory-deploy -m 'Deploy gh-pages'; shx rm -rf gh-pages",
+    "otherdeps": "node -e 'require(\"request\")(\"https://raw.githubusercontent.com/X1011/git-directory-deploy/master/deploy.sh\").pipe(require(\"fs\").createWriteStream(\"node_modules/.bin/git-directory-deploy\"))'",
+    "postinstall": "npm run otherdeps && bower install",
     "serve": "polyserve -c bower_components -n dom-deque",
     "lint": "polylint -b bower_components --no-recursion --input dom-deque.html",
     "docs": "npm run serve -- -o index.html",
