@@ -39,6 +39,5 @@
       "themes/*.css",
       "prism.js"
     ]
-  },
-  "_napaResolved": "https://github.com/prismjs/prism/archive/1.5.0.tar.gz"
+  }
 }

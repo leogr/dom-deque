@@ -1,16 +1,13 @@
+# Promise Polyfill
 
-<!---
+Note: this is an unsolicited fork of [taylorhakes/promise-polyfill](https://github.com/taylorhakes/promise-polyfill)
+and should be considered experimental and unstable compared to upstream.
 
-This README is automatically generated from the comments in these files:
+## Testing
+```
+npm install
+npm test
+```
 
-
-Edit those files, and our readme bot will duplicate them over here!
-Edit this file, and the bot will squash your changes :)
-
-The bot does some handling of markdown. Please file a bug if it does the wrong
-thing! https://github.com/PolymerLabs/tedium/issues
-
--->
-
-[![Build status](https://travis-ci.org/PolymerLabs/promise-polyfill.svg?branch=master)](https://travis-ci.org/PolymerLabs/promise-polyfill)
-
+## License
+MIT

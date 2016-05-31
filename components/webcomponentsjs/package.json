@@ -27,6 +27,5 @@
     "gulp-uglify": "^1.0.1",
     "run-sequence": "^1.0.1",
     "web-component-tester": "^4.0.1"
-  },
-  "_napaResolved": "https://github.com/webcomponents/webcomponentsjs/archive/v0.7.22.tar.gz"
+  }
 }

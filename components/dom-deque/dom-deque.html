@@ -1,18 +1,12 @@
 <link rel="import" href="../polymer/polymer.html">
-
-<script src="DomDequeBehavior.js"></script>
-<script src="ContentChangesObserverBehavior.js"></script>
+<link rel="import" href="dom-deque-behavior.html">
 
 <!--
-A type extension ...
+A pseudo-custom element encapsulating the `DomDeque.DomDequeBehavior`.
 
-Example:
-
-  <template is="dom-queue"></template>
-
-Example:
-
-  // TODO
+```html
+<template is="dom-deque"></template>
+```
 
 @demo demo/index.html
 -->
@@ -22,16 +16,14 @@ Example:
   'use strict';
 
   Polymer({
+
     is: 'dom-deque',
     extends: 'template',
     _template: null,
+
     behaviors: [
-      DomDeque.DomDequeBehavior,
-      DomDeque.ContentChangesObserverBehavior
-    ],
-    _onContentChanges: function() {
-      this.cleanCache();
-    }
+      DomDeque.DomDequeBehavior
+    ]
   });
   </script>
 </dom-module>

@@ -31,6 +31,5 @@
     "ES6",
     "promises-aplus"
   ],
-  "dependencies": {},
-  "_napaResolved": "git://github.com/polymerlabs/promise-polyfill"
+  "dependencies": {}
 }
