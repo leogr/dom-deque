@@ -1,16 +1,13 @@
-<!doctype html>
+
 <html>
 <head>
   <meta charset="utf-8">
   <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../web-component-tester/browser.js"></script>
   <script src="../../../test-fixture/test-fixture-mocha.js"></script>
-
   <link rel="import" href="../../../polymer/polymer.html">
-  <link rel="import" href="../../../promise-polyfill/promise-polyfill.html">
   <link rel="import" href="../../dom-deque.html">
   <link rel="import" href="../../../test-fixture/test-fixture.html">
-
   <link rel="import" href="../asset/test-elements.html">
 </head>
 <body>
@@ -26,54 +23,85 @@
   </test-fixture>
 
   <script>
-    suite('deque', function() {
-      var el;
+    suite('dom-deque', function() {
+      var el, Q;
       setup(function() {
         el = fixture('simple');
+        Q = document.getElementById('Q');
       });
 
-      suite('should attach/detach', function() {
-        var origQ;
-        setup(function() {
-          origQ = Q;
-        });
-
-        test('teardowning instances on detach', function() {
+      suite('@detach', function() {
+        test('should remove instance children from the parent', function(done) {
           assert.equal(el, container);
+
           Q.innerHTML = '<div id="d0">0</div>';
           Q.pushBack();
           Q.innerHTML = '<div id="d1">1</div>';
           Q.pushBack();
-          var d0 = el.querySelector('div#d0');
-          var d1 = el.querySelector('div#d1');
 
-          el.removeChild(Q);
-          assert.equal(0, el.children.length);
-          assert.isNull(d0.parentNode);
-          assert.isNull(d1.parentNode);
+          var el$ = Polymer.dom(el);
+          var d0 = el$.querySelector('div#d0');
+          var d1 = el$.querySelector('div#d1');
+          el$.removeChild(Q);
+
+          flush(function() {
+            assert.equal(0, el$.children.length);
+            assert.isNull(d0.parentNode);
+            assert.isNull(d1.parentNode);
+
+            done();
+          });
         });
+      });
 
-        test('ensuring instances on attach', function() {
+      suite('@attach', function() {
+        test('should insert the instance children into the parent', function(done) {
           assert.equal(el, container);
+
           Q.innerHTML = '<div id="d0">0</div>';
           Q.pushBack();
           Q.innerHTML = '<div id="d1">1</div>';
           Q.pushBack();
-          var d0 = el.querySelector('div#d0');
-          var d1 = el.querySelector('div#d1');
 
-          assert.equal(el, d0.parentNode);
-          assert.equal(el, d1.parentNode);
+          var el$ = Polymer.dom(el);
+          var d0 = el$.querySelector('div#d0');
+          var d1 = el$.querySelector('div#d1');
+
+          flush(function() {
+            assert.equal(2, el$.querySelectorAll('div').length);
+            assert.equal(el, d0.parentNode);
+            assert.equal(el, d1.parentNode);
+
+            done();
+          });
         });
 
-        teardown(function() {
-          el.appendChild(origQ);
+        test('should restore the instance children previously removed due to a detach', function(done) {
+          assert.equal(el, container);
+
+          Q.innerHTML = '<div id="d0">0</div>';
+          Q.pushBack();
+          Q.innerHTML = '<div id="d1">1</div>';
+          Q.pushBack();
+
+          var el$ = Polymer.dom(el);
+          var d0 = el$.querySelector('div#d0');
+          var d1 = el$.querySelector('div#d1');
+
+          flush(function() {
+            assert.equal(2, el$.querySelectorAll('div').length);
+            assert.equal(el, d0.parentNode);
+            assert.equal(el, d1.parentNode);
+
+            done();
+          });
         });
       });
 
       suite('should be able to insert', function() {
         test('at back', function() {
           assert.equal(el, container);
+
           Q.pushBack();
           var counter = el.querySelector('test-counter');
           assert.equal(el.firstElementChild, counter);
@@ -82,6 +110,7 @@
 
         test('at front', function() {
           assert.equal(el, container);
+
           Q.pushFront();
           var counter = el.querySelector('test-counter');
           assert.equal(el.firstElementChild, counter);
@@ -90,6 +119,7 @@
 
         test('more times respecting order', function() {
           assert.equal(el, container);
+
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushBack();
           Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
@@ -124,6 +154,7 @@
       suite('should be able to delete', function() {
         test('at back', function() {
           assert.equal(el, container);
+
           Q.pushFront();
           var counter = el.querySelector('test-counter');
           Q.popBack();
@@ -132,6 +163,7 @@
 
         test('at front', function() {
           assert.equal(el, container);
+
           Q.pushFront();
           var counter = el.querySelector('test-counter');
           Q.popFront();
@@ -140,7 +172,7 @@
 
         test('more times updating order', function() {
           assert.equal(el, container);
-          assert.equal(el, container);
+
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushBack();
           Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
@@ -168,6 +200,7 @@
       suite('should fire dom-change', function() {
         test('when inserting', function(done) {
           assert.equal(el, container);
+
           el.addEventListener('dom-change', function(event) {
             assert.equal(event.target, Q);
             done();
@@ -177,6 +210,7 @@
 
         test('when deleting', function(done) {
           assert.equal(el, container);
+
           var num = 0;
           el.addEventListener('dom-change', function(event) {
             assert.equal(event.target, Q);
@@ -191,8 +225,9 @@
       });
 
       suite('should allow access', function() {
-        test('to front instance', function() {
+        test('to the instance at front', function() {
           assert.equal(el, container);
+
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushFront();
           Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
@@ -203,8 +238,9 @@
           assert.equal(Q.front, i0);
         });
 
-        test('to back instance', function() {
+        test('to the instance at back', function() {
           assert.equal(el, container);
+
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushFront();
           Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
@@ -218,11 +254,13 @@
       suite('should have a maximum number of elements', function() {
         test('infinity by default', function() {
           assert.equal(el, container);
+
           assert.equal(Q.maxSize, Infinity);
         });
 
         test('contains up to `maxSize` elements', function() {
           assert.equal(el, container);
+
           Q.maxSize = 3;
           Q.innerHTML = '<test-counter id="tc3">3</test-counter>';
           var i3 = Q.pushFront();
@@ -246,6 +284,7 @@
 
         test('supports reducing the number of elements', function() {
           assert.equal(el, container);
+
           Q.maxSize = 3;
           Q.innerHTML = '<test-counter id="tc3">3</test-counter>';
           var i3 = Q.pushFront();

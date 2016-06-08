@@ -26,7 +26,8 @@
     "paper-toggle-button": "polymerelements/paper-toggle-button#^1.1.2",
     "paper-styles": "polymerelements/paper-styles#^1.0.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
-    "web-component-tester": "^4.2.2"
+    "web-component-tester": "^4.2.2",
+    "compare-versions": "^2.0.2"
   },
   "ignore": [
     "**/.*",
