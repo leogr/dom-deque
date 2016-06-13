@@ -56,6 +56,7 @@ var DomDeque = DomDeque || {};
     },
 
     detached: function() {
+
       if (!this.parentNode ||
           (this.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE &&
            (!Polymer.Settings.hasShadow ||
@@ -206,10 +207,14 @@ var DomDeque = DomDeque || {};
       if (instance) {
         var c$ = instance._children;
         if (c$ && c$.length) {
-          // Use first child parent (scenario: template may have been detached)
-          var parent = Polymer.dom(Polymer.dom(c$[0]).parentNode);
-          for (var i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
-            parent.removeChild(n);
+          // Use first child parent (since template may have been detached)
+          var parentNode = Polymer.dom(c$[0]).parentNode;
+          // Guard against child that may have been already detached
+          if (parentNode) {
+            var parent = Polymer.dom(parentNode);
+            for (var i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
+              parent.removeChild(n);
+            }
           }
         }
       }
