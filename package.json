@@ -46,6 +46,7 @@
     "lint": "polylint -b bower_components --no-recursion --input dom-deque.html",
     "docs": "npm run serve -- -o index.html",
     "demo": "npm run serve -- -o demo/index.html",
-    "test": "npm run serve -- -o test/index.html"
+    "test": "npm run serve -- -o test/index.html",
+    "coverage": "wct -c wct.conf.js"
   }
 }

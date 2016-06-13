@@ -1,6 +1,7 @@
 bower_components
 node_modules
 gh-pages
+coverage
 *.log
 .idea
 *.sublime*
