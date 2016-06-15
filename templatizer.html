@@ -95,7 +95,6 @@ var DomDeque = DomDeque || {};
         var existingPropertyEffects = {};
         var config = {};
         for (var k in _propertyEffects) {
-
           // We assume that when a property has its own descriptor that cannot be changed
           var pd;
           if ((pd = Object.getOwnPropertyDescriptor(dataHost, k)) && !pd.configurable) {

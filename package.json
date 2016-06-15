@@ -19,6 +19,7 @@
   "dependencies": {},
   "devDependencies": {
     "bower": "1.7.x",
+    "conventional-changelog-cli": "1.2.x",
     "git-scripts": "0.2.x",
     "polylint": "2.10.x",
     "polyserve": "0.10.x",
@@ -26,7 +27,7 @@
     "shx": "0.1.x",
     "validate-commit": "2.1.x",
     "web-component-tester": "4.2.x",
-    "web-component-tester-istanbul": "^0.10.0"
+    "web-component-tester-istanbul": "0.10.x"
   },
   "keywords": [
     "web-components",
@@ -47,6 +48,7 @@
     "docs": "npm run serve -- -o index.html",
     "demo": "npm run serve -- -o demo/index.html",
     "test": "npm run serve -- -o test/index.html",
-    "coverage": "wct -c wct.conf.js"
+    "coverage": "wct -c wct.conf.js",
+    "changelog": "conventional-changelog -p eslint -i CHANGELOG.md -s"
   }
 }
