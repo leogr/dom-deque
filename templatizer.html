@@ -65,26 +65,34 @@ var DomDeque = DomDeque || {};
       // When content cache is missing and a data host exists
       // We add new properties and effects to the data host
       if (!template._content && dataHost && dataHost._template) {
-
         // Setup instance specific properties
         dataHost._bindListeners = [];
         dataHost._notes = []; // old notes are already processed
         dataHost._propertyEffects = Polymer.Base.mixin({}, dataHost._propertyEffects);
 
-        // Swap template with a temporary one in order to parse new content
+        // We have a new HTML within `template.content`,
+        // So we create a temporary container injecting into it a copy of `template`
         var tmp = document.createElement('template');
         tmp.innerHTML = template.outerHTML;
-        dataHost._template = tmp;
 
-        // Prepare new annotations and new effects
+        // Temporarily use the new container instead of the original one
+        dataHost._template = tmp;
+        // So prepare new annotations and new effects from it
         dataHost._prepAnnotations();
         dataHost._prepEffects();
+
+        // Recycle the processing output
+        template._content = dataHost._notes[0].templateContent; // _notes[0] refers to the copy
+        // Tell to Polymer's templatize to use right the parent properties
+        this.content._parentProps = Polymer.Base.mixin(
+          this.content._parentProps || {},
+          template._content._parentProps
+        );
 
         // Backup existing property effects (from the data host), for later usage
         // Keep only unseen property effects
         var _propertyEffects = dataHost._propertyEffects;
         var existingPropertyEffects = {};
-        var allProps = {};
         var config = {};
         for (var k in _propertyEffects) {
 
@@ -107,7 +115,6 @@ var DomDeque = DomDeque || {};
             template[this._parentPropPrefix + k] = dataHost[k];
           }
 
-          allProps[k] = true;
         }
 
         // Create new bindings
@@ -138,9 +145,6 @@ var DomDeque = DomDeque || {};
             dataHost[k] = config[k];
           }
         }
-
-        // Tell to Polymer's templatize to use all the parent properties
-        this.content._parentProps = allProps;
 
         // Removing _template from instance, we restore the _template from proto
         delete dataHost._template;

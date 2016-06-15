@@ -6,7 +6,7 @@
   <script src="../../../web-component-tester/browser.js"></script>
   <link rel="import" href="../../../polymer/polymer.html">
   <link rel="import" href="../../dom-deque.html">
-  <link rel="import" href="bind-elements.html">
+  <link rel="import" href="../asset/bind-elements.html">
 
 </head>
 <body>
@@ -397,7 +397,7 @@
       document.body.removeChild(el);
     });
 
-    /* FIXME:
+
     test('annotated computation with dynamic function', function(done) {
       el = document.createElement('x-bind-computed-property');
       document.body.appendChild(el);
@@ -411,78 +411,28 @@
           return 'changed: ' + message;
         };
 
-        // FIXME: textContent has been not bound, because custom templatizer parses it as __static__
         assert.equal(check.textContent, 'changed: Hello World.');
         done();
       });
 
     });
 
-
-    //FIXME: as above
-    test('annotated computation / late resolved dynamic function', function() {
+    test('annotated computation / late resolved dynamic function', function(done) {
       el = document.createElement('x-bind-computed-property-late-translator');
       document.body.appendChild(el);
       el.setup();
-      var check = Polymer.dom(el.root).querySelector('#check');
+      setTimeout(function() {
+        var check = Polymer.dom(el.root).querySelector('#check');
+        assert.equal(check.textContent.trim(), '');
+        el.translator = function(message) {
+          return 'translated: ' + message;
+        };
 
-      assert.equal(check.textContent.trim(), '');
-      el.translator = function(message) {
-        return 'translated: ' + message;
-      };
-      assert.equal(check.textContent, 'translated: Hello');
-    });
-     */
-
-
-    /*
-    test('observer with dynamic function', function() {
-      Polymer({
-        is: 'x-observer-with-dynamic-function',
-        properties: {
-          translateMessage: {
-            type: Function
-          },
-          message: {
-            type: String,
-            value: 'Hello'
-          }
-        },
-        observers: ['translateMessage(message)']
+        assert.equal(check.textContent, 'translated: Hello');
+        done();
       });
-      el = document.createElement('x-observer-with-dynamic-function');
-      document.body.appendChild(el);
-      var called = 0;
-      el.translateMessage = function() {
-        called += 1;
-      };
-      assert.equal(called, 1);
-    });
-    test('computed property with dynamic function', function() {
-      Polymer({
-        is: 'x-computed-property-with-dynamic-function',
-        properties: {
-          computedValue: {
-            computed: "translateMessage('Hello')"
-          },
-          translateMessage: {
-            type: Function
-          }
-        }
-      });
-      el = document.createElement('x-computed-property-with-dynamic-function');
-      document.body.appendChild(el);
-      assert.equal(el.computedValue, undefined);
-      var called = 0;
-      el.translateMessage = function(message) {
-        called += 1;
-        return 'translated: ' + message;
-      };
-      assert.equal(called, 1);
-      assert.equal(el.computedValue, 'translated: Hello');
     });
 
-    */
 
     test('ensure annotator can pass dynamic fn to parent props', function(done) {
       el = document.createElement('x-child-template-with-dynamic-fn');
