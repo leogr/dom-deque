@@ -2,19 +2,23 @@ language: node_js
 sudo: true
 dist: trusty
 node_js:
-  - stable
+- stable
 branches:
   except:
-    - gh-pages
+  - gh-pages
+env:
+  global:
+  - secure: MBV8+hdh7+yB6xtW7DSeab5xhjsWtPEBOJ+NmrbOJ7T4r+Dufx2buYbOmzG8y50FvlDtwDMWS0OXD9YL6MXjSS+hwePM6k4IQTGKHinvPjtqff+0lSB5Dp+Xj+5JWHu8O5mAtBmrqjTl4pzDmshAkf55T6Kox03N3h74I1eij2leP7Dscf7OaZSW/L8/KpZdCOG2oRitH6jStk9RpzvcP71hHXpFWkByIHDurWRodiCAZmaX2+p+cVNw1jde43IRlP5hqfrcSVFpOnnaKQlixuMYfYUnsV38qzdgESSGN9NldvUm/uWIPNH3uqsgAUNhhRJk6mBCO68L5omvfqYYjWt88ycidepUDq1wurHKmB3FcSf5XTh1wZ5kIeMg2S31dxW0xpsmAVPSgK/Q8voE9yBIjwqyvPOe2nnCF/hIkpR+EEKKCZfbH7EYkpV3HTVvJX/a9NL6dw/RO+O/FES4BHHWUlRmVpg5D1114VgZ1ukn7YHGykWwI6H8eJDikN7ebZG1F3a+AgN4JSAB0DzecLkVAvVOc4tjuOGT8AF9t/eJLLLMAsjNwqCaqdEEeCTXdECFlCPzWdCeR5fy/hnPQfk4Xqa9Fsi3lX6u6YRU7Jfgpn1ejAC+lo5gtUqzE5F5njKkPYpbisQHrB76qHXjwgWDiZiLgSRQKX/9Dut6ouw=
+  - secure: HFaieCe7b+2T83h7mVngf1Uw30bYG6tTfFSoEKEArQP/BVXdF7h2AAJ8ZEuyGRFmEUF2tpeiDqo91hpeFi2e+hBVgwrpX2KmQk1SSI4tGnLpTIpfMmgqUeMxymlo6+q9aT4HgLpIKBLLYGY5R/lyA4Iv9cPNNfduwoF5/Q01+R0NCOC/8W65uPu57DzexIGcfinsjokesv1zGqhjh4kUsNnnuKKb6fZrpoCWc/Qx029xhUlfd+IS0ZTkVf6BewtrWlTStVIRYrrqEDyKAz6gSimnQt/6QKzHjySX3OUlwL86gVVwp58/KzZOMgKfAE4y70DK/2sJrkS1zhuObBJk6mD2oMt4oocIB26KeGpVphDnWsKLpWIlB26mmXZ5Uy8nejwGhlRela5mDUzb2rjqUx/8FuVG5zJCz1+S4Jb+QEQBDRQCF6XYFLNiQorkZN9gSuowM7AICnOzgoucj3KoW6I6HZzv90Y3+tgRDYTD611ZfdVY3KvQHupSswdfMxgkyGNTUHcbY3Xv/0PCfgET1PAjVSo9rtM6g7wCAPIW7X87ofUR6pvbQ7ond7KpcidgtBvBtXydNE832fj4B+BeIPEEvoxTyRNYtmqKt8i1tyc5raEJzCZBp9dhN1zG8ooUHLdAnOOapHDPUcgGGG3UyYpFqMC1rYjFcRri3UtyRkk=
 addons:
   apt:
     sources:
-      - google-chrome
+    - google-chrome
     packages:
-      - google-chrome-stable
+    - google-chrome-stable
   sauce_connect: true
 before_script:
-  - npm run lint
+- npm run lint
 script:
-  - xvfb-run npm run coverage
-  - "if [ \"${TRAVIS_PULL_REQUEST}\" = \"false\" ]; then wct -s 'default'; fi"
+- xvfb-run npm run coverage
+- "if [ \"${TRAVIS_PULL_REQUEST}\" = \"false\" ]; then wct -s 'default'; fi"
