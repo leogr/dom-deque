@@ -1,0 +1,658 @@
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../web-component-tester/browser.js"></script>
+  <script src="../../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../dom-deque.html">
+  <link rel="import" href="../../../test-fixture/test-fixture.html">
+  <link rel="import" href="../asset/test-elements.html">
+</head>
+<body>
+
+  <test-fixture id="simple">
+    <template>
+      <div id="container">
+        <template is="dom-deque" id="Q">
+          <test-counter></test-counter>
+        </template>
+      </div>
+    </template>
+  </test-fixture>
+
+  <div id="removalContainer">
+    <template is="dom-deque" id="toBeRemoved"><div id="shouldBeRemoved"></div></template>
+  </div>
+
+  <div id="forwardContainer">
+    <template is="dom-bind" id="dombind">
+      <template is=dom-deque id="domdeque"><div prop="[[obj]]" subprop="[[obj.prop]]">{{anno}}</div></template>
+    </template>
+  </div>
+
+  <script>
+    suite('dom-deque', function() {
+      var el, Q;
+      setup(function() {
+        el = fixture('simple');
+        Q = document.getElementById('Q');
+      });
+
+      suite('@attach, detach', function() {
+        suiteSetup(function() {
+          toBeRemoved.pushBack();
+        });
+
+        // ATTACH
+
+        test('should insert the instance children into the parent', function(done) {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="d0">0</div>';
+          Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="d1">1</div>';
+          Q.pushBack();
+
+          var el$ = Polymer.dom(el);
+          var d0 = el$.querySelector('div#d0');
+          var d1 = el$.querySelector('div#d1');
+
+          flush(function() {
+            assert.equal(2, el$.querySelectorAll('div').length);
+            assert.equal(el, d0.parentNode);
+            assert.equal(el, d1.parentNode);
+
+            done();
+          });
+        });
+
+        test('should restore the instance children previously removed due to a detach', function(done) {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="d0">0</div>';
+          Q.pushBack();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="d1">1</div>';
+          Q.pushBack();
+
+          var el$ = Polymer.dom(el);
+          var d0 = el$.querySelector('div#d0');
+          var d1 = el$.querySelector('div#d1');
+          el$.removeChild(Q);
+
+          // Will not be attached
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="d2">2</div>';
+          Q.pushBack();
+
+          el$.appendChild(Q);
+
+          flush(function() {
+            assert.equal(Q._instances.length, 2)
+            assert.equal(2, el$.querySelectorAll('div').length);
+            assert.equal(el, d0.parentNode);
+            assert.equal(el, d1.parentNode);
+
+            done();
+          });
+        });
+
+        test('should guard against being detached while render was queued', function(done) {
+          var myQ = document.createElement('template', 'dom-deque');
+          document.body.appendChild(myQ);
+          myQ.untemplatize(myQ);
+          myQ.innerHTML = '<span>SPAN</span>';
+          myQ.pushFront();
+          assert(document.body, myQ.parentNode);
+          document.body.removeChild(myQ);
+          assert.isNull(myQ.parentNode);
+
+          // Call queue is:
+          // (1) myQ.attached() => async call myQ._attachInstances()
+          // (2) myQ.detached()
+          // (3) myQ._attachInstances()
+
+          // (1)
+          myQ.async(function() {
+            assert.isNull(myQ.parentNode);
+            document.body.appendChild(myQ);
+            assert(document.body, myQ.parentNode);
+          });
+
+          // (2)
+          myQ.async(function() {
+            assert(document.body, myQ.parentNode);
+            document.body.removeChild(myQ);
+            assert.isNull(myQ.parentNode); // So next call - i.e., myQ._attachInstances() - will have to guard against a missing parent node
+            done();
+          });
+        });
+
+        test('should not attach instance without children', function(done) {
+          var myQ = document.createElement('template', 'dom-deque');
+          document.body.appendChild(myQ);
+          myQ.untemplatize(myQ);
+          myQ.innerHTML = '';
+          var tinstance = myQ.pushBack();
+
+          assert.isUndefined(tinstance._children[0]);
+          assert.isArray(myQ._instances);
+          assert.equal(myQ._instances.length, 1);
+          assert.isArray(myQ._instances[0]._children);
+
+          assert(document.body, myQ.parentNode);
+          document.body.removeChild(myQ);
+          assert.isNull(myQ.parentNode);
+
+          myQ.async(function() {
+            assert.isNull(myQ.parentNode);
+            document.body.appendChild(myQ);
+            assert(document.body, myQ.parentNode);
+
+            done();
+          });
+        });
+
+        // DETACH
+
+        test('should remove instance children from the parent', function(done) {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="d0">0</div>';
+          Q.pushBack();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="d1">1</div>';
+          Q.pushBack();
+
+          var el$ = Polymer.dom(el);
+          var d0 = el$.querySelector('div#d0');
+          var d1 = el$.querySelector('div#d1');
+          el$.removeChild(Q);
+
+          flush(function() {
+            assert.equal(0, el$.children.length);
+            assert.isNull(d0.parentNode);
+            assert.isNull(d1.parentNode);
+
+            done();
+          });
+        });
+
+        test('should not detach instance without children', function() {
+          assert.equal(el, container);
+
+          var el$ = Polymer.dom(el);
+          assert(el$.firstElementChild, Q);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '';
+          var tinstance = Q.pushFront();
+          assert.isUndefined(tinstance._children[0]);
+          assert.isArray(Q._instances);
+          assert.equal(Q._instances.length, 1);
+          assert.isArray(Q._instances[0]._children);
+
+          assert(el$.firstElementChild, Q);
+          assert.equal(el$.children.length, 1);
+
+          el$.removeChild(Q);
+
+          assert.isNull(el$.firstElementChild);
+          assert.equal(el$.children.length, 0);
+        })
+
+        test('should detach from origin when moving into a shadow root of an element into DOM', function(done) {
+          if (!Polymer.Settings.useShadow) {
+            done();
+            return;
+          }
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="x">Hello!</div>';
+          Q.pushBack();
+
+          var ws = document.createElement('with-shadow');
+          document.body.appendChild(ws); // Note that NOT appending <ws> to DOM bring to a missing detach from el (the parent of Q)
+          Polymer.dom(ws.root).appendChild(Q);
+
+          flush(function() {
+            assert.equal(ws.$$('#x').parentNode, ws.root);
+            assert(el.children.length === 0);
+
+            done();
+          });
+        });
+
+        test('move into doc fragment', function(done) {
+          var el = shouldBeRemoved;
+          assert.equal(el.parentNode, removalContainer);
+          var frag = document.createDocumentFragment();
+          Polymer.dom(frag).appendChild(toBeRemoved);
+          flush(function() {
+            assert.equal(el.parentNode, null);
+            Polymer.dom(removalContainer).appendChild(frag);
+            flush(function() {
+              assert.equal(shouldBeRemoved.parentNode, removalContainer);
+              done();
+            });
+          });
+        });
+
+        test('move into shadow root', function(done) {
+          if (!Polymer.Settings.useShadow) {
+            done();
+            return;
+          }
+
+          var el = shouldBeRemoved;
+          assert.equal(el.parentNode, removalContainer);
+          var div = document.createElement('div');
+          document.body.appendChild(div);
+          var frag = div.createShadowRoot();
+          Polymer.dom(frag).appendChild(toBeRemoved);
+          flush(function() {
+            assert.equal(el.parentNode, frag);
+            Polymer.dom(removalContainer).appendChild(frag);
+            done();
+          });
+        });
+      });
+
+      suite('@render', function() {
+        var sypTemplatize;
+        setup(function() {
+          sypTemplatize = sinon.spy(Q, 'templatize');
+        })
+
+        teardown(function() {
+          sypTemplatize.restore();
+          Q.maxSize = Infinity;
+        });
+
+        test('should not call templatize() when ctor already exists', function() {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="d0">0</div>';
+          // Templatization
+          Q.pushBack();
+          assert(sypTemplatize.calledWith(Q), 'DomDequeBehavior::templatize() must be called with DomDeque instance');
+          // Should skip templatize
+          Q.pushBack();
+          assert(
+            sypTemplatize.calledOnce,
+            'DomDequeBehavior::templatize() must not be called when ctor exists'
+          );
+        });
+
+        test('should skip render when not attached', function() {
+          var deque = document.createElement('template', 'dom-deque');
+          deque.setAttribute('id', 'dQ');
+
+          Q.untemplatize(Q);
+          deque.innerHTML = '<div id="d0">0</div>';
+          var i0 = deque.pushBack();
+          assert.isUndefined(i0); // Since no parent ...
+
+          container.appendChild(deque);
+          assert.equal(deque._instances.length, 0);
+          container.removeChild(deque);
+        });
+
+        test('should limit instances depending on max size', function() {
+          assert.equal(el, container);
+
+          Q.maxSize = 3;
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="tc3">3</div>';
+          var i3 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="tc2">2</div>';
+          var i2 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="tc1">1</div>';
+          var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="tc0">0</div>';
+          var i0 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="tc4">4</div>';
+          var i4 = Q.pushBack();
+
+          // | TC0 | TC1 | TC2 | TC3 | TC4
+          // | TC1 | TC2 | TC4 | xxx
+          assert.equal(Q._instances.length, 3);
+          assert.isTrue(Q._instances[Q.maxSize - 1] === i4);
+          assert.isTrue(Q._instances[Q.maxSize - 2] === i2);
+          assert.isTrue(Q._instances[Q.maxSize - 3] === i1);
+          assert.isTrue(Q._instances[Q.maxSize - 1]._children[0] === el.querySelector('div#tc4'));
+          assert.isTrue(Q._instances[Q.maxSize - 2]._children[0] === el.querySelector('div#tc2'));
+          assert.isTrue(Q._instances[Q.maxSize - 3]._children[0] === el.querySelector('div#tc1'));
+        });
+
+        test('should correctly compute insertion point', function() {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="back"></div>';
+          var iback = Q.pushBack();
+          assert.isTrue(iback._children[0].nextSibling === Q); // Insert before Q
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '';
+          var iempty = Q.pushFront();
+          assert.isUndefined(iempty._children[0]);
+          assert.isUndefined(iback._children[0].prevSibling);
+          assert.isTrue(iback._children[0].nextSibling === Q); // Fake insert before Q
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<div id="front"></div>';
+          var ifront = Q.pushFront();
+          assert.isUndefined(ifront._children[0].prevSibling);
+          assert.isTrue(ifront._children[0].nextSibling === iback._children[0]);  // Insert before iback
+          assert.isTrue(iback._children[0].nextSibling === Q);
+        });
+      });
+
+      suite('should be able to insert', function() {
+        test('at back', function() {
+          assert.equal(el, container);
+
+          Q.pushBack();
+          var counter = el.querySelector('test-counter');
+          assert.equal(el.firstElementChild, counter);
+          assert.equal(1, counter.count);
+        });
+
+        test('at front', function() {
+          assert.equal(el, container);
+
+          Q.pushFront();
+          var counter = el.querySelector('test-counter');
+          assert.equal(el.firstElementChild, counter);
+          assert.equal(1, counter.count);
+        });
+
+        test('more times respecting order', function() {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushBack();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushBack();
+          assert.equal(Q._instances[0], i0);
+          assert.equal(Q._instances[1], i1);
+          assert.equal(Q._instances[2], i2);
+          var tc0 = el.querySelector('test-counter#tc0');
+          var tc1 = el.querySelector('test-counter#tc1');
+          var tc2 = el.querySelector('test-counter#tc2');
+          assert.equal(Q._instances[0]._children[0], tc0);
+          assert.equal(Q._instances[1]._children[0], tc1);
+          assert.equal(Q._instances[2]._children[0], tc2);
+          assert.equal(tc0, el.firstElementChild);
+          assert.equal(tc0, el.children.tc0);
+          assert.equal(tc1, el.children.tc1);
+          assert.equal(tc1, el.firstElementChild.nextSibling);
+          assert.equal(tc2, el.children.tc2);
+          assert.equal(tc2, el.firstElementChild.nextSibling.nextSibling);
+          assert.equal(3, el.children.tc0.count);
+          assert.equal(3, el.children.tc1.count);
+          assert.equal(3, el.children.tc2.count);
+        });
+
+        teardown(function() {
+          el.querySelector('test-counter').count = 0;
+        });
+      });
+
+      suite('should be able to delete', function() {
+        test('at back', function() {
+          assert.equal(el, container);
+
+          var i0 = Q.pushFront();
+          var counter = el.querySelector('test-counter');
+          assert.deepEqual(i0, Q.popBack());
+          assert.isNull(counter.parentNode);
+
+          assert.isUndefined(Q.popBack());
+          assert.equal(Q._instances.length, 0);
+        });
+
+        test('at front', function() {
+          assert.equal(el, container);
+
+          var i0 = Q.pushFront();
+          var counter = el.querySelector('test-counter');
+          assert.deepEqual(i0, Q.popFront());
+          assert.isNull(counter.parentNode);
+
+          assert.isUndefined(Q.popFront());
+          assert.equal(Q._instances.length, 0);
+        });
+
+        test('more times updating order', function() {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushBack();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushBack();
+          var tc0 = el.querySelector('test-counter#tc0');
+          var tc1 = el.querySelector('test-counter#tc1');
+          var tc2 = el.querySelector('test-counter#tc2');
+
+          Q.popFront();
+          assert.isNull(tc0.parentNode);
+          assert.equal(tc1.parentNode, el);
+          assert.equal(tc2.parentNode, el);
+
+          assert.equal(Q._instances[0]._children[0], tc1);
+          assert.equal(Q._instances[1]._children[0], tc2);
+          assert.equal(tc1, el.firstElementChild);
+          assert.equal(tc2, el.firstElementChild.nextSibling);
+          assert.equal(tc1, el.children.tc1);
+          assert.equal(tc2, el.children.tc2);
+        });
+      });
+
+      suite('should fire dom-change', function() {
+        test('when inserting', function(done) {
+          assert.equal(el, container);
+
+          el.addEventListener('dom-change', function(event) {
+            assert.equal(event.target, Q);
+            done();
+          });
+          Q.pushFront();
+        });
+
+        test('when deleting', function(done) {
+          assert.equal(el, container);
+
+          var num = 0;
+          el.addEventListener('dom-change', function(event) {
+            assert.equal(event.target, Q);
+            num++;
+            if (num === 2) {
+              done();
+            }
+          });
+          Q.pushBack();
+          Q.popFront();
+        });
+      });
+
+      suite('should allow access', function() {
+        test('to the instance at front', function() {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushBack();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+          assert.equal(el.firstElementChild, el.querySelector('test-counter#tc0'));
+          assert.equal(Q.front, i0);
+        });
+
+        test('to the instance at back', function() {
+          assert.equal(el, container);
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushBack();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+          assert.equal(Q.back, i2);
+        });
+      });
+
+      suite('should have a maximum number of elements', function() {
+        test('infinity by default', function() {
+          assert.equal(el, container);
+
+          assert.equal(Q.maxSize, Infinity);
+        });
+
+        test('contains up to `maxSize` elements', function() {
+          assert.equal(el, container);
+
+          Q.maxSize = 3;
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc3">3</test-counter>';
+          var i3 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+
+          // | TC0 | TC1 | TC2 | TC3 |
+          // | TC0 | TC1 | TC2 | xxx |
+
+          assert.equal(Q.maxSize, 3);
+          assert.equal(Q._instances.length, 3);
+          assert.equal(Q._instances[0], i0);
+          assert.equal(Q._instances[Q.maxSize - 1], i2);
+          assert.equal(Q._instances[0]._children[0], el.querySelector('test-counter#tc0'));
+          assert.equal(Q._instances[Q.maxSize - 1]._children[0], el.querySelector('test-counter#tc2'));
+        });
+
+        test('supports reducing the number of elements', function() {
+          assert.equal(el, container);
+
+          Q.maxSize = 3;
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc3">3</test-counter>';
+          var i3 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
+          var i2 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
+          var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
+          Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
+          var i0 = Q.pushFront();
+          // | TC0 | TC1 | TC2 | TC3 |
+          // | TC0 | TC1 | TC2 | xxx |
+          assert.equal(Q._instances.length, 3);
+          assert.isTrue(Q._instances[Q.maxSize - 1] === i2);
+          assert.isTrue(Q._instances[Q.maxSize - 2] === i1);
+          assert.isTrue(Q._instances[Q.maxSize - 3] === i0);
+          assert.isTrue(Q._instances[Q.maxSize - 1]._children[0] === el.querySelector('test-counter#tc2'));
+          assert.isTrue(Q._instances[Q.maxSize - 2]._children[0] === el.querySelector('test-counter#tc1'));
+          assert.isTrue(Q._instances[Q.maxSize - 3]._children[0] === el.querySelector('test-counter#tc0'));
+
+          Q.maxSize = 2;
+          // | TC0 | TC1 | xxx | xxx |
+          assert.equal(Q.maxSize, 2);
+          assert.equal(Q._instances.length, 2);
+          assert.isTrue(Q._instances[Q.maxSize - 1] === i1);
+          assert.isTrue(Q._instances[Q.maxSize - 2] === i0);
+          assert.isTrue(Q._instances[Q.maxSize - 1]._children[0] === el.querySelector('test-counter#tc1'));
+          assert.isTrue(Q._instances[Q.maxSize - 2]._children[0] === el.querySelector('test-counter#tc0'));
+        });
+      });
+
+      suite('@forward', function() {
+        test('should forward parent properties', function() {
+          var i = domdeque.pushBack();
+          dombind.anno = 2016;
+          dombind.obj = { prop: true };
+          assert.equal(i._children[0], forwardContainer.firstElementChild);
+          assert.equal(domdeque._parent_anno, '2016');
+          assert.equal(domdeque._parent_obj, dombind.obj);
+          assert.equal(forwardContainer.firstElementChild.prop, dombind.obj);
+          assert.equal(forwardContainer.firstElementChild.textContent, dombind.anno);
+          domdeque.popBack();
+        });
+
+        test('should forward parent paths', function() {
+          var i = domdeque.pushBack();
+          dombind.anno = 2016;
+          dombind.obj = { prop: false };
+          dombind.set('obj.prop', true);
+          assert.equal(i._children[0], forwardContainer.firstElementChild);
+          assert.equal(domdeque._parent_obj, dombind.obj);
+          assert.isTrue(forwardContainer.firstElementChild.subprop);
+        });
+      })
+    });
+  </script>
+
+</body>
+</html>

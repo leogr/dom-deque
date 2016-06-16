@@ -1,0 +1,928 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../dom-deque.html">
+  <link rel="import" href="../asset/bind-elements.html">
+
+</head>
+<body>
+
+<template id="x-basic-template-content">
+  <div id="boundChild"
+       value="{{ value }}"
+       negvalue="{{!bool}}"
+       attrvalue$="{{attrvalue}}"
+       computedvalue="{{computedvalue}}"
+       computedvaluetwo="{{computedvaluetwo}}"
+       camel-case="{{value}}"
+       computed-inline="{{computeInline(value,add, divide)}}"
+       computed-inline2="{{computeInline(value, add,divide)}}"
+       computed-inline3="{{computeInline(value, add,
+                                        divide)}}"
+       computedattribute$="{{computeInline(value, add,divide)}}"
+       computedattribute2$="{{computeInline(
+                               value, add, divide)}}"
+       neg-computed-inline="{{!computeInline(value,add,divide)}}"
+       computed-negative-number="{{computeNegativeNumber(-1)}}"
+       computed-negative-literal="{{computeNegativeNumber(-A)}}"
+       computed-wildcard="{{computeWildcard(a, b.*)}}"
+       style$="{{boundStyle}}"
+       data-id$="{{dataSetId}}"
+       custom-event-value="{{customEventValue::custom}}"
+       custom-event-object-value="{{customEventObject.value::change}}"
+       computed-from-mixed-literals='{{computeFromLiterals(3, "foo", bool)}}'
+       computed-from-pure-literals='{{computeFromLiterals( 3, "foo")}}'
+       computed-from-tricky-function='{{$computeTrickyFunctionFromLiterals( 3, "foo")}}'
+       computed-from-tricky-literals="{{computeFromTrickyLiterals(3, 'tricky\,\'zot\'')}}"
+       computed-from-tricky-literals2='{{computeFromTrickyLiterals(3,"tricky\,&#39;zot&#39;" )}}'
+       computed-from-tricky-literals3='{{computeFromTrickyLiterals(3,
+                                          "tricky\,&#39;zot&#39;" )}}'
+       computed-from-no-args="{{computeFromNoArgs( )}}"
+       no-computed="{{foobared(noInlineComputed)}}"
+       compoundAttr1$="{{cpnd1}}{{ cpnd2 }}{{cpnd3.prop}}{{ computeCompound(cpnd4, cpnd5, 'literal')}}"
+       compoundAttr2$="literal1 {{cpnd1}} literal2 {{cpnd2}}{{cpnd3.prop}} literal3 {{computeCompound(cpnd4, cpnd5, 'literal')}} literal4"
+       compoundAttr3$="[yes/no]: {{cpnd1}}, {{computeCompound('world', 'username ', 'Hello {0} ')}}"
+  >
+    Test
+    <!-- Malformed bindings to be ignored -->
+    {{really.long.identifier.in.malformed.binding.should.be.ignored]}
+    {{computeFromLiterals(3, 'really.long.literal.in.malformed.binding.should.be.ignored)]}
+    <!-- Should still parse -->
+    {{computeFromLiterals(3, 'foo', bool)}}
+  </div>
+  <x-prop id="boundProps"
+          prop1="{{cpnd1}}{{ cpnd2 }}{{cpnd3.prop}}{{ computeCompound(cpnd4, cpnd5, 'literal')}}"
+          prop2="literal1 {{cpnd1}} literal2 {{cpnd2}}{{cpnd3.prop}} literal3 {{computeCompound(cpnd4, cpnd5, 'literal')}} literal4"
+  ></x-prop>
+  <span id="boundText">{{text}}</span>
+  <span idtest id="{{boundId}}"></span>
+  <s id="computedContent">{{computeFromTrickyLiterals(3, 'tricky\,\'zot\'')}}</s>
+  <s id="computedContent2">{{computeFromTrickyLiterals("(",3)}}</s>
+  <input id="boundInput" value="{{text::input}}">
+  <div id="compound1">{{cpnd1}}{{cpnd2}}{{cpnd3.prop}}{{computeCompound(cpnd4, cpnd5, 'literal')}}</div>
+  <div id="compound2">
+    literal1 {{cpnd1}} literal2 {{cpnd2}}{{cpnd3.prop}} literal3 {{computeCompound(cpnd4, cpnd5, 'literal')}} literal4
+  </div>
+  <span id="boundWithDash">{{objectWithDash.binding-with-dash}}</span>
+</template>
+
+<template id="x-compose-template-content">
+  <x-basic id="basic1"
+           value="{{boundvalue}}"
+           notifyingvalue="{{boundnotifyingvalue}}"
+           notifyingvalue-with-default="{{boundnotifyingvalueWithDefault}}"
+           camel-notifying-value="{{boundnotifyingvalue}}"
+           computedvalue="{{boundcomputedvalue}}"
+           computednotifyingvalue="{{boundcomputednotifyingvalue}}"
+           readonlyvalue="{{boundreadonlyvalue}}">
+  </x-basic>
+  <x-basic id="basic2"
+           value="[[boundvalue]]"
+           notifyingvalue="[[boundnotifyingvalue]]"
+           computedvalue="[[boundcomputedvalue]]"
+           computednotifyingvalue="[[boundcomputednotifyingvalue]]">
+  </x-basic>
+  <x-basic id="basic3"
+           notifyingvalue="{{computedValue}}"
+           computedvalue="{{value}}">
+  </x-basic>
+  <x-basic id="basic4"
+           notifyingvalue="{{!negatedValue}}">
+  </x-basic>
+</template>
+
+<template id="class-repeat" is="dom-repeat" items='["class1", "class2"]'>
+  <div class$=[[item]] clazz$="[[item]]">[[item]]</div>
+</template>
+
+<script>
+  suite('single-element binding effects', function() {
+    var el;
+    var boundText;
+    var boundInput;
+    var boundChild;
+    var computedContent;
+    var computedContent2;
+    var boundWithDash;
+    setup(function() {
+      el = document.createElement('x-basic');
+      document.body.appendChild(el);
+      el.setup();
+      // the followings are not available by el.$ because marshalling is not supported at instance time
+      boundText = Polymer.dom(el.root).querySelector('#boundText');
+      boundInput = Polymer.dom(el.root).querySelector('#boundInput');
+      boundChild = Polymer.dom(el.root).querySelector('#boundChild');
+      computedContent = Polymer.dom(el.root).querySelector('#computedContent');
+      computedContent2 = Polymer.dom(el.root).querySelector('#computedContent2');
+      boundWithDash = Polymer.dom(el.root).querySelector('#boundWithDash');
+    });
+
+    teardown(function() {
+      document.body.removeChild(el);
+    });
+
+    test('undefined input value', function() {
+      assert.equal(boundInput.value, '', 'undefined input value not blank');
+      el.text = 'this is a test';
+      assert.equal(boundInput.value, 'this is a test', 'binding to input didn\'t go');
+      el.text = undefined;
+      assert.equal(boundInput.value, '', 'undefined input value not blank');
+    });
+
+    test('id is bindable', function() {
+      assert.equal(Polymer.dom(el.root).querySelector('span[idtest]').id, 'span', 'id bound to <span> not found');
+    });
+
+    test('textContent binding updates', function() {
+      el.text = 'this is a test';
+      assert.equal(boundText.textContent, 'this is a test', 'Value not propagated to textContent');
+    });
+
+    test('textContent binding to undefined is empty string', function() {
+      el.text = 'this is a test';
+      el.text = undefined;
+      assert.equal(boundText.textContent, '', 'undefined bound to textContent should be empty string');
+    });
+
+    test('textContent binding to null is empty string', function() {
+      el.text = null;
+      assert.equal(boundText.textContent, '', 'null bound to textContent should be empty string');
+    });
+
+    test('textContent binding to zero is empty correct', function() {
+      el.text = 0;
+      assert.equal(boundText.textContent, '0', 'zero bound to textContent should be empty string');
+    });
+
+    test('camel-case binding updates', function() {
+      el.value = 41;
+      assert.equal(boundChild.camelCase, 41, 'Value not propagated to camelCase property');
+    });
+
+    test('annotation binding updates', function() {
+      el.value = 42;
+      assert.equal(boundChild.value, 42, 'Value not propagated to bound child');
+    });
+
+    test('negated annotation binding updates', function() {
+      el.bool = true;
+      assert.equal(boundChild.negvalue, false, 'Value not negated');
+      el.bool = false;
+      assert.equal(boundChild.negvalue, true, 'Value not negated');
+    });
+
+    test('observer called', function() {
+      assert.equal(el.observerCounts.valueChanged, 1, 'observer not called once for default value at configure');
+      el.value = 43;
+      assert.equal(el.observerCounts.valueChanged, 2, 'observer not called after property change');
+    });
+
+    test('computed value updates', function() {
+      el.value = 44;
+      assert.equal(el.computedvalue, 45, 'Computed value not correct');
+      assert.equal(boundChild.computedvalue, 45, 'Computed value not propagated to bound child');
+    });
+
+    test('computed value readOnly from imperative set', function() {
+      el.value = 44;
+      // Should have no effect
+      el.computedvalue = 99;
+      assert.equal(el.computedvalue, 45, 'Computed value not correct');
+      assert.equal(boundChild.computedvalue, 45, 'Computed value not propagated to bound child');
+    });
+
+    test('computed values to same method updates', function() {
+      el.value = 44;
+      el.valuetwo = 144;
+      assert.equal(el.computedvalue, 45, 'Computed value not correct');
+      assert.equal(el.computedvaluetwo, 145, 'Computed value not correct');
+      assert.equal(boundChild.computedvalue, 45, 'Computed value not propagated to bound child');
+    });
+
+    test('notification sent', function() {
+      var notified = 0;
+      el.addEventListener('notifyingvalue-changed', function(e) {
+        assert.equal(e.detail.value, 45);
+        notified++;
+      });
+      el.addEventListener('camel-notifying-value-changed', function(e) {
+        assert.equal(e.detail.value, 45);
+        notified++;
+      });
+      el.notifyingvalue = 45;
+      el.camelNotifyingValue = 45;
+      assert.equal(notified, 2, 'Notification events not sent');
+    });
+
+    test('computed observer called', function() {
+      el.clearObserverCounts();
+      el.value = 46;
+      assert.equal(el.observerCounts.computedvalueChanged, 1, 'observer not called');
+    });
+
+    test('NaN does not loop observers', function() {
+      el.clearObserverCounts();
+      el.addEventListener('notifierwithoutcomputing-changed', function() {
+        if (el.observerCounts.notifierWithoutComputingChanged >= 3) {
+          throw new Error('infinite loop!');
+        }
+      });
+      el.notifierWithoutComputing = NaN;
+      assert.equal(el.observerCounts.notifierWithoutComputingChanged, 1,
+        'NaN was not handled as expected');
+    });
+
+    test('computed notification sent', function() {
+      var notified = 0;
+      el.addEventListener('computednotifyingvalue-changed', function(e) {
+        assert.equal(e.detail.value, 49);
+        notified++;
+      });
+      el.notifyingvalue = 47;
+      assert.equal(notified, 1, 'Notification event not sent');
+    });
+
+    test('computed property with multiple dependencies', function() {
+      var notified = 0;
+      el.addEventListener('computed-from-multiple-values-changed', function() {
+        notified++;
+      });
+      el.sum1 = 10;
+      el.sum2 = 20;
+      el.divide = 2;
+      assert.equal(el.computedFromMultipleValues, 15, 'Computed value wrong');
+      assert.equal(notified, 1, 'Notification event not sent');
+      assert.equal(el.observerCounts.computedFromMultipleValuesChanged, 1, 'observer not called');
+    });
+
+    test('computed annotation with literals', function() {
+      el.bool = true;
+      assert.equal(boundChild.computedFromMixedLiterals, '3foo', 'Wrong result from mixed literal arg computation');
+      assert.equal(boundChild.computedFromPureLiterals, '3foo', 'Wrong result from pure literal arg computation');
+      assert.equal(boundChild.computedFromTrickyFunction, '3foo', 'Wrong result from tricky function with pure literal arg computation');
+      assert.equal(boundChild.computedFromTrickyLiterals, '3tricky,\'zot\'', 'Wrong result from tricky literal arg computation');
+      assert.equal(boundChild.computedFromTrickyLiterals2, '3tricky,\'zot\'', 'Wrong result from tricky literal arg computation');
+      assert.equal(boundChild.computedFromTrickyLiterals3, '3tricky,\'zot\'', 'Wrong result from tricky literal arg computation');
+      assert.equal(computedContent.textContent, '3tricky,\'zot\'', 'Wrong textContent from tricky literal arg computation');
+      assert.equal(computedContent2.textContent, '(3', 'Wrong textContent from tricky literal arg computation');
+    });
+
+    test('computed annotation with no args', function() {
+      assert.equal(boundChild.computedFromNoArgs, 'no args!', 'Wrong content when computed has no args');
+    });
+
+    test('no read-only observer called with assignment', function() {
+      el.readolyvalue = 46;
+      assert.equal(el.observerCounts.readonlyvalueChanged, 0, 'observer should not be called for readOnly prop assignment');
+    });
+
+    test('read-only observer called with _setReadonlyvalue', function() {
+      el._setReadonlyvalue(46);
+      assert.equal(el.observerCounts.readonlyvalueChanged, 1, 'observer should be called');
+      assert(el.readonlyvalue == 46, 'value should be changed but was not');
+    });
+
+    test('no read-only notification sent with assignment', function() {
+      var notified = 0;
+      el.addEventListener('readonlyvalue-changed', function() {
+        notified++;
+      });
+      el.readonlyvalue = 47;
+      assert.equal(notified, 0, 'Notification should not be called for readOnly prop assignment');
+    });
+
+    test('read-only notification sent with _setReadonlyvalue', function() {
+      var notified = 0;
+      el.addEventListener('readonlyvalue-changed', function(e) {
+        assert.equal(e.detail.value, 47);
+        notified++;
+      });
+      el._setReadonlyvalue(47);
+      assert.equal(notified, 1, 'Notification event not sent');
+    });
+
+    test('multiple dependency observer called once', function() {
+      el.dep1 = true;
+      el.dep2 = {};
+      el.dep3 = 42;
+      assert.equal(el.observerCounts.multipleDepChangeHandler, 1, 'observer not called once');
+    });
+
+    test('annotated computed property', function() {
+      el.value = 20;
+      el.add = 40;
+      el.divide = 3;
+      assert.equal(boundChild.computedInline, 20, 'computedInline not correct');
+      assert.equal(boundChild.computedInline2, 20, 'computedInline2 not correct');
+      assert.equal(boundChild.computedInline3, 20, 'computedInline3 not correct');
+      assert.equal(boundChild.negComputedInline, false, 'negComputedInline not correct');
+    });
+
+    test('annotated computed attribute', function() {
+      el.value = 20;
+      el.add = 40;
+      el.divide = 3;
+      assert.equal(boundChild.getAttribute('computedattribute'), 20, 'computed attribute not correct');
+      assert.equal(boundChild.getAttribute('computedattribute2'), 20, 'computed attribute not correct');
+    });
+
+    test('annotated style attribute binding', function() {
+      el.boundStyle = 'padding: 37px;';
+      assert.equal(getComputedStyle(boundChild).paddingTop, '37px', 'style attribute binding not correct');
+    });
+
+    test('annotated dataset attribute binding', function() {
+      if (boundChild.datast) {  // IE10, sigh
+        el.dataSetId = 'yeah';
+        assert.equal(boundChild.dataset.id, 'yeah', 'dataset.id dataset property not set correctly');
+        assert.equal(boundChild.getAttribute('data-id'), 'yeah', 'data-id attribute not set correctly');
+      }
+    });
+
+    test('custom notification event to property', function() {
+      boundChild.customEventValue = 42;
+      el.fire('custom', null, {node: boundChild});
+      assert.equal(el.customEventValue, 42, 'custom bound property incorrect');
+      assert.equal(el.observerCounts.customEventValueChanged, 1, 'custom bound property observer not called');
+    });
+
+    test('custom notification event to path', function() {
+      el.clearObserverCounts();
+      boundChild.customEventObjectValue = 84;
+      boundChild.dispatchEvent(new Event('change'));
+      assert.equal(el.customEventObject.value, 84, 'custom bound path incorrect');
+      assert.equal(el.observerCounts.customEventObjectValueChanged, 1, 'custom bound path observer not called');
+    });
+
+    test('computed property with negative number', function() {
+      assert.equal(boundChild.computedNegativeNumber, -1);
+    });
+
+    test('computed property with negative literal', function() {
+      assert.equal(boundChild.computedNegativeLiteral, undefined);
+    });
+
+    test('computed binding with wildcard', function() {
+      el.a = 5;
+      el.b = {value: 10};
+      assert.equal(boundChild.computedWildcard, 15);
+    });
+
+    test('binding with dash', function() {
+      el.objectWithDash = {
+        'binding-with-dash': 'yes'
+      };
+      assert.equal(boundWithDash.textContent, 'yes');
+    });
+
+    test('class attribute without template scope not erased', function() {
+      var el = document.querySelector('.class1');
+      assert.notEqual(el, null, 'class without template scope is undefined');
+      var el2 = document.querySelector('.class2');
+      assert.notEqual(el2, null, 'class without template scope is undefined');
+    });
+
+
+  });
+</script>
+
+<script>
+  suite('computed bindings with dynamic functions', function() {
+    var el;
+    teardown(function() {
+      document.body.removeChild(el);
+    });
+
+
+    test('annotated computation with dynamic function', function(done) {
+      el = document.createElement('x-bind-computed-property');
+      document.body.appendChild(el);
+      el.setup();
+
+      // await for template flushing
+      flush(function() {
+        var check = Polymer.dom(el.root).querySelector('#check');
+        assert.equal(check.textContent, 'translated: Hello World.');
+        el.translator = function(message) {
+          return 'changed: ' + message;
+        };
+
+        assert.equal(check.textContent, 'changed: Hello World.');
+        done();
+      });
+
+    });
+
+    test('annotated computation / late resolved dynamic function', function(done) {
+      el = document.createElement('x-bind-computed-property-late-translator');
+      document.body.appendChild(el);
+      el.setup();
+      setTimeout(function() {
+        var check = Polymer.dom(el.root).querySelector('#check');
+        assert.equal(check.textContent.trim(), '');
+        el.translator = function(message) {
+          return 'translated: ' + message;
+        };
+
+        assert.equal(check.textContent, 'translated: Hello');
+        done();
+      });
+    });
+
+
+    test('ensure annotator can pass dynamic fn to parent props', function(done) {
+      el = document.createElement('x-child-template-with-dynamic-fn');
+      document.body.appendChild(el);
+      el.setup();
+      setTimeout(function() {
+        var check = Polymer.dom(el.root).querySelector('p');
+        assert.equal(check.textContent, 'text');
+        done();
+      });
+    });
+
+  });
+</script>
+
+
+<script>
+  suite('2-way binding effects between elements', function() {
+    var el;
+    var basic1;
+    var basic3;
+    var basic4;
+    setup(function() {
+      el = document.createElement('x-compose');
+      document.body.appendChild(el);
+      el.setup();
+      basic1 = Polymer.dom(el.root).querySelector('#basic1');
+      basic3 = Polymer.dom(el.root).querySelector('#basic3');
+      basic4 = Polymer.dom(el.root).querySelector('#basic4');
+    });
+
+    teardown(function() {
+      document.body.removeChild(el);
+    });
+
+    test('binding to non-notifying property', function() {
+      el.boundvalue = 42;
+      assert.equal(basic1.value, 42, 'binding to child not updated');
+      basic1.value = 43;
+      assert.equal(el.boundvalue, 42, 'binding to non-notifying property updated and should not have been');
+    });
+
+    test('observer for property bound to non-notifying property', function() {
+      basic1.value = 44;
+      assert.equal(el.observerCounts.boundvalueChanged, 0, 'observer for property bound to non-notifying property called and should not have been');
+    });
+
+    test('binding to non-notifying computed property', function() {
+      el.boundcomputedvalue = 42;
+      basic1.value = 43;
+      assert.equal(el.boundcomputedvalue, 42, 'binding to non-notifying computed property updated and should not have been');
+    });
+
+    test('observer for property bound to non-notifying computed property', function() {
+      basic1.value = 44;
+      assert.equal(el.observerCounts.boundcomputedvalueChanged, 0, 'observer for property bound to non-notifying computed property called and should not have been');
+    });
+
+    test('computed value readOnly from downward binding', function() {
+      basic3.value = 10;
+      assert.equal(basic3.computedvalue, 11);
+      // should have no effect
+      el.value = 99;
+      assert.equal(basic3.computedvalue, 11);
+    });
+
+    test('computed value readOnly from upward notification', function() {
+      assert.equal(el.computedValue, 30);
+      // should have no effect
+      basic3.notifyingvalue = 10;
+      assert.equal(el.computedValue, 30);
+    });
+
+    test('binding to notifying property', function() {
+      el.boundnotifyingvalue = 42;
+      assert.equal(basic1.notifyingvalue, 42, 'binding to child not updated');
+      assert.equal(basic1.camelNotifyingValue, 42, 'camel-case binding to child not updated');
+      basic1.notifyingvalue = 43;
+      assert.equal(el.boundnotifyingvalue, 43, 'binding to notifying property not updated');
+      basic1.camelNotifyingValue = -43;
+      assert.equal(el.boundnotifyingvalue, -43, 'camel-case binding to notifying property not updated');
+    });
+
+    test('binding to notifying property with default', function() {
+      assert.equal(el.boundnotifyingvalueWithDefault, 99);
+    });
+
+    test('observer for property bound to notifying property', function() {
+      basic1.notifyingvalue = 45;
+      assert.equal(el.observerCounts.boundnotifyingvalueChanged, 1, 'observer for property bound to notifying property not called');
+    });
+
+    test('binding to notifying computed property', function() {
+      basic1.notifyingvalue = 43;
+      assert.equal(el.boundcomputednotifyingvalue, 45, 'binding to notifying computed property not updated');
+    });
+
+    test('observer for property bound to notifying computed property', function() {
+      basic1.notifyingvalue = 45;
+      assert.equal(el.observerCounts.boundcomputednotifyingvalueChanged, 1, 'observer for property bound to non-notifying computed property not called');
+    });
+
+    test('no change for binding into read-only property', function() {
+      basic1._setReadonlyvalue(45);
+      basic1.clearObserverCounts();
+      el.boundreadonlyvalue = 46;
+      assert.equal(basic1.observerCounts.readonlyvalueChanged, 0, 'observer for read-only property should not be called from change to bound value');
+      assert.equal(basic1.readonlyvalue, 45, 'read-only property should not change from change to bound value');
+    });
+
+    test('change for binding out of read-only property', function() {
+      basic1._setReadonlyvalue(46);
+      assert.equal(el.observerCounts.boundreadonlyvalueChanged, 1, 'observer for property bound to read-only property should be called from change to bound value');
+      assert.equal(el.boundreadonlyvalue, 46, 'property bound to read-only property should change from change to bound value');
+    });
+
+    test('listener for value-changed fires when value changed from host', function() {
+      var listener = sinon.spy();
+      basic1.addEventListener('notifyingvalue-changed', listener);
+      el.boundnotifyingvalue = 678;
+      assert.equal(basic1.notifyingvalue, 678);
+      assert.isTrue(listener.calledOnce);
+      assert.equal(listener.getCalls()[0].args[0].detail.value, 678);
+    });
+
+    test('negated binding update negates value for parent', function() {
+      assert.equal(el.negatedValue, false);
+      assert.equal(basic4.notifyingvalue, true);
+      basic4.notifyingvalue = false;
+      assert.equal(el.negatedValue, true);
+    });
+  });
+
+  suite('1-way binding effects between elements', function() {
+    var el;
+    var basic1;
+    var basic2;
+    var basic3;
+    var basic4;
+    setup(function() {
+      el = document.createElement('x-compose');
+      document.body.appendChild(el);
+      el.setup();
+      basic1 = Polymer.dom(el.root).querySelector('#basic1');
+      basic2 = Polymer.dom(el.root).querySelector('#basic2');
+      basic3 = Polymer.dom(el.root).querySelector('#basic3');
+      basic4 = Polymer.dom(el.root).querySelector('#basic4');
+    });
+
+    teardown(function() {
+      document.body.removeChild(el);
+    });
+
+    test('one-way binding to non-notifying property', function() {
+      el.boundvalue = 42;
+      assert.equal(basic1.value, 42, 'binding to child not updated');
+      basic2.value = 43;
+      assert.equal(el.boundvalue, 42, 'binding to non-notifying property updated and should not have been');
+    });
+
+    test('observer for property one-way-bound to non-notifying property', function() {
+      basic2.value = 44;
+      assert.equal(el.observerCounts.boundvalueChanged, 0, 'observer for property one-way-bound to non-notifying property called and should not have been');
+    });
+
+    test('one-way binding to non-notifying computed property', function() {
+      el.boundcomputedvalue = 42;
+      basic2.value = 43;
+      assert.equal(el.boundcomputedvalue, 42, 'binding to non-notifying computed property updated and should not have been');
+    });
+
+    test('observer for property one-way-bound to non-notifying computed property', function() {
+      basic2.value = 44;
+      assert.equal(el.observerCounts.boundcomputedvalueChanged, 0, 'observer for property bound to non-notifying computed property called and should not have been');
+    });
+
+    test('one-way binding to notifying property', function() {
+      el.boundnotifyingvalue = 42;
+      assert.equal(basic2.notifyingvalue, 42, 'binding to child not updated');
+      basic2.notifyingvalue = 43;
+      assert.equal(el.boundnotifyingvalue, 42, 'binding to notifying property updated and should not have been');
+    });
+
+    test('observer for property one-way-bound to notifying property', function() {
+      basic2.notifyingvalue = 45;
+      assert.equal(el.observerCounts.boundnotifyingvalueChanged, 0, 'observer for property bound to notifying property called and should not have been');
+    });
+
+    test('one-way binding to notifying computed property', function() {
+      el.boundcomputednotifyingvalue = 42;
+      basic2.notifyingvalue = 43;
+      assert.equal(el.boundcomputednotifyingvalue, 42, 'binding to notifying computed property updated and should not have been');
+    });
+
+    test('observer for property one-way-bound to notifying computed property', function() {
+      basic2.notifyingvalue = 45;
+      assert.equal(el.observerCounts.boundcomputednotifyingvalueChanged, 0, 'observer for property bound to non-notifying computed property called and should not have been');
+    });
+  });
+
+
+  suite('binding to attribute', function() {
+    var el;
+    var boundText;
+    var boundInput;
+    var boundChild;
+    var computedContent;
+    var computedContent2;
+    var boundWithDash;
+    setup(function() {
+      el = document.createElement('x-basic');
+      document.body.appendChild(el);
+      el.setup();
+      // the followings are not available by el.$ because marshalling is not supported at instance time
+      boundText = Polymer.dom(el.root).querySelector('#boundText');
+      boundInput = Polymer.dom(el.root).querySelector('#boundInput');
+      boundChild = Polymer.dom(el.root).querySelector('#boundChild');
+      computedContent = Polymer.dom(el.root).querySelector('#computedContent');
+      computedContent2 = Polymer.dom(el.root).querySelector('#computedContent2');
+      boundWithDash = Polymer.dom(el.root).querySelector('#boundWithDash');
+    });
+    teardown(function() {
+      document.body.removeChild(el);
+    });
+
+    test('bind object to attribute', function() {
+      el.attrvalue = {foo: 'bar', array: [1, '2', {3:3}]};
+      assert.equal(boundChild.getAttribute('attrvalue'),
+        '{"foo":"bar","array":[1,"2",{"3":3}]}');
+      el.attrvalue = null;
+      assert(!boundChild.hasAttribute('attrvalue'));
+    });
+
+    test('bind array to attribute', function() {
+      el.attrvalue = [1, '2', {3:3}, {'four': 'four'}];
+      assert.equal(boundChild.getAttribute('attrvalue'),
+        '[1,"2",{"3":3},{"four":"four"}]');
+      el.attrvalue = null;
+      assert(!boundChild.hasAttribute('attrvalue'));
+    });
+
+    test('bind string to attribute', function() {
+      el.attrvalue = '"polymer is grrrrreat, ain\'t it?"';
+      assert.equal(boundChild.getAttribute('attrvalue'),
+        '"polymer is grrrrreat, ain\'t it?"');
+      el.attrvalue = '';
+      assert.equal(boundChild.getAttribute('attrvalue'), '');
+      el.attrvalue = null;
+      assert(!boundChild.hasAttribute('attrvalue'));
+    });
+
+    test('bind number to attribute', function() {
+      el.attrvalue = 765;
+      assert.equal(boundChild.getAttribute('attrvalue'), '765');
+      el.attrvalue = 765.4321;
+      assert.equal(boundChild.getAttribute('attrvalue'), '765.4321');
+      el.attrvalue = null;
+      assert(!boundChild.hasAttribute('attrvalue'));
+    });
+
+    test('bind boolean to attribute', function() {
+      el.attrvalue = true;
+      assert(boundChild.hasAttribute('attrvalue'));
+      assert.equal(boundChild.getAttribute('attrvalue'), '');
+      el.attrvalue = false;
+      assert(!boundChild.hasAttribute('attrvalue'));
+      el.attrvalue = true;
+      el.attrvalue = null;
+      assert(!boundChild.hasAttribute('attrvalue'));
+    });
+
+    test('bind date to attribute', function() {
+      el.attrvalue = new Date('Fri Jan 23 2015 17:40:29 GMT-0800 (PST)');
+      assert(boundChild.hasAttribute('attrvalue'));
+      assert.equal(Date.parse(boundChild.getAttribute('attrvalue')),
+        el.attrvalue.getTime());
+      el.attrvalue = null;
+      assert(!boundChild.hasAttribute('attrvalue'));
+    });
+  });
+
+
+
+  suite('binding corner cases', function() {
+    // IE can create adjacent text nodes that split bindings; this test
+    // ensures the code that addresses this is functional
+    test('text binding after entity', function() {
+      var el = document.createElement('x-entity-and-binding');
+      el.setup();
+      var binding = Polymer.dom(el.root).querySelector('#binding');
+      assert.equal(binding.textContent, 'binding');
+    });
+
+    test('bind to isAttached', function() {
+      var el = document.createElement('x-bind-is-attached');
+      sinon.spy(el, '_isAttachedChanged');
+      el.setup();
+      var check = Polymer.dom(el.root).querySelector('#check');
+      document.body.appendChild(el);
+      Polymer.dom.flush();
+      assert.equal(check.textContent, 'true');
+      assert.isTrue(el._isAttachedChanged.calledOnce);
+      document.body.removeChild(el);
+    });
+  });
+
+  suite('compound binding / string interpolation', function() {
+    test('compound adjacent property bindings', function() {
+      var el = document.createElement('x-basic');
+      el.setup();
+      var boundProps = Polymer.dom(el.root).querySelector('#boundProps');
+      // Adjacent compound binding with no literal do not override the default
+      assert.equal(boundProps.prop1, 'default');
+      assert.isTrue(boundProps.prop1Changed.calledOnce);
+      el.cpnd2 = 'cpnd2';
+      assert.equal(boundProps.prop1, 'cpnd2');
+      el.cpnd1 = 'cpnd1';
+      el.cpnd3 = {prop: 'cpnd3'};
+      assert.equal(boundProps.prop1, 'cpnd1cpnd2cpnd3');
+      el.cpnd4 = 'cpnd4';
+      assert.equal(boundProps.prop1, 'cpnd1cpnd2cpnd3');
+      el.cpnd5 = 'cpnd5';
+      assert.equal(boundProps.prop1, 'cpnd1cpnd2cpnd3literalcpnd5cpnd4');
+    });
+
+    test('compound property bindings with literals', function() {
+      var el = document.createElement('x-basic');
+      el.setup();
+      var boundProps = Polymer.dom(el.root).querySelector('#boundProps');
+      assert.equal(boundProps.prop2, 'literal1  literal2  literal3  literal4');
+      assert.isTrue(boundProps.prop2Changed.calledOnce);
+      el.cpnd1 = 'cpnd1';
+      el.cpnd2 = 'cpnd2';
+      el.cpnd3 = {prop: 'cpnd3'};
+      el.cpnd4 = 'cpnd4';
+      el.cpnd5 = 'cpnd5';
+      assert.equal(boundProps.prop2, 'literal1 cpnd1 literal2 cpnd2cpnd3 literal3 literalcpnd5cpnd4 literal4');
+      el.cpnd1 = null;
+      el.cpnd2 = undefined;
+      el.cpnd3 = {};
+      el.cpnd4 = '';
+      el.cpnd5 = '';
+      assert.equal(boundProps.prop2, 'literal1  literal2  literal3 literal literal4');
+    });
+
+    test('compound adjacent attribute bindings', function() {
+      var el = document.createElement('x-basic');
+      el.setup();
+      var boundChild = Polymer.dom(el.root).querySelector('#boundChild');
+      // Adjacent compound binding with no literal do not override the default
+      assert.equal(boundChild.getAttribute('compoundAttr1'), null);
+      el.cpnd2 = 'cpnd2';
+      assert.equal(boundChild.getAttribute('compoundAttr1'), 'cpnd2');
+      el.cpnd1 = 'cpnd1';
+      el.cpnd3 = {prop: 'cpnd3'};
+      assert.equal(boundChild.getAttribute('compoundAttr1'), 'cpnd1cpnd2cpnd3');
+      el.cpnd4 = 'cpnd4';
+      assert.equal(boundChild.getAttribute('compoundAttr1'), 'cpnd1cpnd2cpnd3');
+      el.cpnd5 = 'cpnd5';
+      assert.equal(boundChild.getAttribute('compoundAttr1'), 'cpnd1cpnd2cpnd3literalcpnd5cpnd4');
+    });
+
+    test('compound property attribute with literals', function() {
+      var el = document.createElement('x-basic');
+      el.setup();
+      var boundChild = Polymer.dom(el.root).querySelector('#boundChild');
+      assert.equal(boundChild.getAttribute('compoundAttr2'), 'literal1  literal2  literal3  literal4');
+      el.cpnd1 = 'cpnd1';
+      el.cpnd2 = 'cpnd2';
+      el.cpnd3 = {prop: 'cpnd3'};
+      el.cpnd4 = 'cpnd4';
+      el.cpnd5 = 'cpnd5';
+      assert.equal(boundChild.getAttribute('compoundAttr2'), 'literal1 cpnd1 literal2 cpnd2cpnd3 literal3 literalcpnd5cpnd4 literal4');
+      el.cpnd1 = null;
+      el.cpnd2 = undefined;
+      el.cpnd3 = {};
+      el.cpnd4 = '';
+      el.cpnd5 = '';
+      assert.equal(boundChild.getAttribute('compoundAttr2'), 'literal1  literal2  literal3 literal literal4');
+    });
+
+    test('compound property attribute with {} and [] in text', function() {
+      var el = document.createElement('x-basic');
+      el.setup();
+      var boundChild = Polymer.dom(el.root).querySelector('#boundChild');
+      el.cpnd1 = 'cpnd1';
+      assert.equal(boundChild.getAttribute('compoundAttr3'), '[yes/no]: cpnd1, Hello {0} username world');
+    });
+
+    test('compound adjacent textNode bindings', function() {
+      var el = document.createElement('x-basic');
+      el.setup();
+      var compound1 = Polymer.dom(el.root).querySelector('#compound1');
+      // The single space is due to the gambit to prevent empty text nodes
+      // from being evacipated on IE during importNode from the template; it will
+      // only be there the when in the virgin state after cloning the template
+      assert.equal(compound1.textContent, ' ');
+      el.cpnd2 = 'cpnd2';
+      assert.equal(compound1.textContent, 'cpnd2');
+      el.cpnd1 = 'cpnd1';
+      el.cpnd3 = {prop: 'cpnd3'};
+      assert.equal(compound1.textContent, 'cpnd1cpnd2cpnd3');
+      el.cpnd4 = 'cpnd4';
+      assert.equal(compound1.textContent, 'cpnd1cpnd2cpnd3');
+      el.cpnd5 = 'cpnd5';
+      assert.equal(compound1.textContent, 'cpnd1cpnd2cpnd3literalcpnd5cpnd4');
+      // Once the binding evaluates back to '', it will in fact be ''
+      el.computeCompound = function() { return ''; };
+      el.cpnd1 = null;
+      el.cpnd2 = '';
+      el.cpnd3 = {prop: null};
+      el.cpnd4 = null;
+      el.cpnd5 = '';
+      assert.equal(compound1.textContent, '');
+    });
+
+    test('compound textNode bindings with literals', function() {
+      var el = document.createElement('x-basic');
+      el.setup();
+      var compound2 = Polymer.dom(el.root).querySelector('#compound2');
+      assert.equal(compound2.textContent.trim(), 'literal1  literal2  literal3  literal4');
+      el.cpnd1 = 'cpnd1';
+      el.cpnd2 = 'cpnd2';
+      el.cpnd3 = {prop: 'cpnd3'};
+      el.cpnd4 = 'cpnd4';
+      el.cpnd5 = 'cpnd5';
+      assert.equal(compound2.textContent.trim(), 'literal1 cpnd1 literal2 cpnd2cpnd3 literal3 literalcpnd5cpnd4 literal4');
+      el.cpnd1 = null;
+      el.cpnd2 = undefined;
+      el.cpnd3 = {};
+      el.cpnd4 = '';
+      el.cpnd5 = '';
+      assert.equal(compound2.textContent.trim(), 'literal1  literal2  literal3 literal literal4');
+    });
+
+    test('malformed bindings ignored', function() {
+      var el = document.createElement('x-basic');
+      el.setup();
+      var boundChild = Polymer.dom(el.root).querySelector('#boundChild');
+      el.bool = true;
+      assert.isTrue(boundChild.textContent.indexOf('really.long.identifier.in.malformed.binding.should.be.ignored') >= 0, true);
+      assert.isTrue(boundChild.textContent.indexOf('really.long.literal.in.malformed.binding.should.be.ignored') >= 0, true);
+      assert.isTrue(boundChild.textContent.indexOf('3foo') >= 0, true);
+    });
+  });
+
+  suite('order of effects', function() {
+    var el;
+    setup(function() {
+      el = document.createElement('x-order-of-effects-grand-parent').$.child;
+    });
+    test('effects are sorted', function() {
+      assert.equal(el.invocations.length, 0);
+      el.base = 'changed';
+      var expected = [
+        'compute',
+        'annotation',            // as observed by child
+        'annotatedComputation',  // as observed by child
+        'reflect',
+        'notify',                // as observed by grand-parent
+        'observer',
+        'complexObserver'
+      ];
+      assert.deepEqual(el.invocations, expected);
+    });
+  });
+
+</script>
+
+<script>
+  suite('bind at instance time', function() {
+    var host;
+    setup(function() {
+      host = document.createElement('x-instance-bind');
+      document.body.appendChild(host);
+    });
+    teardown(function() {
+      document.body.removeChild(host);
+    });
+    test('stamped with initial data', function() {
+      var w = Polymer.dom(host.root).querySelector('#fooWrapper');
+      assert.equal(w.innerHTML, host.foo);
+
+      host.stampNewContent();
+
+      w = Polymer.dom(host.root).querySelector('#fooWrapper');
+      assert.equal(w.innerHTML, host.bar);
+    });
+  });
+</script>
+
+</body>
+</html>
