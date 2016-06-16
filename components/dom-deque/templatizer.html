@@ -5,7 +5,6 @@
 var DomDeque = DomDeque || {};
 
 (function() {
-  var setHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
 
   /**
    * The `DomDeque.Templatizer` is an extension of `Polymer.templatizer`.
@@ -21,17 +20,6 @@ var DomDeque = DomDeque || {};
    * @polymerBehavior DomDeque.Templatizer
    */
   var TemplatizerImpl = {
-    /**
-     * Sets the HTML syntax describing the element descendants.
-     *
-     * It automatically untemplatizes the current template.
-     *
-     * @param      {string}  text  The serialized HTML to replace with.
-     */
-    set innerHTML(text) {
-      this.untemplatize(this);
-      setHTML.call(this, text);
-    },
 
     /**
      * Cleans all the template caches.
@@ -65,33 +53,72 @@ var DomDeque = DomDeque || {};
       // When content cache is missing and a data host exists
       // We add new properties and effects to the data host
       if (!template._content && dataHost && dataHost._template) {
-
-        // Avoid to re-attach old listeners
+        // Setup instance specific properties
         dataHost._bindListeners = [];
+        dataHost._notes = []; // old notes are already processed
+        dataHost._propertyEffects = Polymer.Base.mixin({}, dataHost._propertyEffects);
 
-        // Force data host to parse new annotations
-        dataHost._template.innerHTML = template.outerHTML;
+        // We have a new HTML within `template.content`,
+        // So we create a temporary container injecting into it a copy of `template`
+        var tmp = document.createElement('template');
+        tmp.innerHTML = template.outerHTML;
 
+        // Temporarily use the new container instead of the original one
+        dataHost._template = tmp;
+        // So prepare new annotations and new effects from it
         dataHost._prepAnnotations();
         dataHost._prepEffects();
+
+        // Recycle the processing output
+        template._content = dataHost._notes[0].templateContent; // _notes[0] refers to the copy
+        // Tell to Polymer's templatize to use right the parent properties
+        this.content._parentProps = Polymer.Base.mixin(
+          this.content._parentProps || {},
+          template._content._parentProps
+        );
 
         // Backup existing property effects (from the data host), for later usage
         // Keep only unseen property effects
         var _propertyEffects = dataHost._propertyEffects;
         var existingPropertyEffects = {};
-        var allProps = {};
+        var config = {};
         for (var k in _propertyEffects) {
-          if (Object.getOwnPropertyDescriptor(dataHost, k)) {
+          // We assume that when a property has its own descriptor that cannot be changed
+          var pd;
+          if ((pd = Object.getOwnPropertyDescriptor(dataHost, k)) && !pd.configurable) {
             existingPropertyEffects[k] = _propertyEffects[k];
             delete _propertyEffects[k];
           }
-          allProps[k] = true;
+
+          // Preserve data
+          if (dataHost[k] !== undefined) {
+            config[k] = dataHost[k];
+          }
+
+          // When a property already exists in the data host but the template did not have it yet,
+          // the property's value is not propagated to the template until the next notification.
+          // So we need to set it now.
+          if (dataHost[k] !== undefined && template[this._parentPropPrefix + k] === undefined) {
+            template[this._parentPropPrefix + k] = dataHost[k];
+          }
+
         }
 
         // Create new bindings
         Polymer.Bind.createBindings(dataHost); // Called within dataHost._prepBindings();
 
-        // Bind new listeners
+        // Prepare listeners for new bindings only
+        var _bindListeners = [];
+        var index = dataHost._nodes.indexOf(template);
+        for (var i= 0, bl, bl$ = dataHost._bindListeners; bl = bl$[i]; i++) {
+          if (_propertyEffects[bl.path]) {
+            bl.index = index;
+            _bindListeners.push(bl);
+          }
+        }
+        dataHost._bindListeners = _bindListeners;
+
+        // Setup listeners for new bindings
         Polymer.Bind.setupBindListeners(dataHost);
 
         // Restore pre-existing property effects list
@@ -99,8 +126,15 @@ var DomDeque = DomDeque || {};
           _propertyEffects[k] = existingPropertyEffects[k];
         }
 
-        // Tell to Polymer's templatize to use all the parent properties
-        this.content._parentProps = allProps;
+        // Restore data
+        for (var k in config) {
+          if (dataHost[k] !== config[k]) {
+            dataHost[k] = config[k];
+          }
+        }
+
+        // Removing _template from instance, we restore the _template from proto
+        delete dataHost._template;
       }
 
       // Finally, templatize the template and extend the "this" object

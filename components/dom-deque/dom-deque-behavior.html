@@ -3,6 +3,7 @@
 <script>
 'use strict';
 
+/* istanbul ignore next */
 var DomDeque = DomDeque || {};
 
 (function() {
@@ -203,11 +204,13 @@ var DomDeque = DomDeque || {};
      * @param {Polymer.Base} instance Instance to detach.
      */
     _detachInstance: function(instance) {
-      if (instance) {
-        var c$ = instance._children;
-        if (c$ && c$.length) {
-          // Use first child parent (scenario: template may have been detached)
-          var parent = Polymer.dom(Polymer.dom(c$[0]).parentNode);
+      var c$ = instance._children;
+      if (c$ && c$.length) {
+        // Use first child parent (since template may have been detached)
+        var parentNode = Polymer.dom(c$[0]).parentNode;
+        // Guard against child that may have been already detached
+        if (parentNode) {
+          var parent = Polymer.dom(parentNode);
           for (var i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
             parent.removeChild(n);
           }
@@ -228,8 +231,8 @@ var DomDeque = DomDeque || {};
           if (c$ && c$.length) {
             // Detect case where dom-deque was re-attached in new position
             var lastChild = Polymer.dom(this).previousSibling;
-            if (lastChild !== c$[c$.length-1]) {
-              for (var i=0, n; (i<c$.length) && (n=c$[i]); i++) {
+            if (lastChild !== c$[c$.length - 1]) {
+              for (var i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
                 parent.insertBefore(n, this);
               }
             }

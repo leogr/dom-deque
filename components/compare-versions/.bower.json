@@ -1,0 +1,40 @@
+{
+  "name": "compare-versions",
+  "version": "2.0.2",
+  "description": "Compare semver version strings to find greater, equal or lesser.",
+  "main": "index.js",
+  "authors": [
+    "Ole Bjørn Michelsen <ole@michelsen.dk>"
+  ],
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "semver",
+    "version",
+    "compare",
+    "browser",
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "homepage": "https://github.com/omichelsen/compare-versions",
+  "_release": "2.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.0.2",
+    "commit": "9ea7b58d583dd5cb7d7329bc42486d4f3bd81b38"
+  },
+  "_source": "https://github.com/omichelsen/compare-versions.git",
+  "_target": "^2.0.2",
+  "_originalSource": "compare-versions",
+  "_direct": true
+}
