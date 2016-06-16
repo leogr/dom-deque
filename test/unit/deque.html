@@ -51,8 +51,11 @@
         test('should insert the instance children into the parent', function(done) {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="d0">0</div>';
           Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="d1">1</div>';
           Q.pushBack();
 
@@ -72,8 +75,11 @@
         test('should restore the instance children previously removed due to a detach', function(done) {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="d0">0</div>';
           Q.pushBack();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="d1">1</div>';
           Q.pushBack();
 
@@ -83,6 +89,7 @@
           el$.removeChild(Q);
 
           // Will not be attached
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="d2">2</div>';
           Q.pushBack();
 
@@ -101,6 +108,7 @@
         test('should guard against being detached while render was queued', function(done) {
           var myQ = document.createElement('template', 'dom-deque');
           document.body.appendChild(myQ);
+          myQ.untemplatize(myQ);
           myQ.innerHTML = '<span>SPAN</span>';
           myQ.pushFront();
           assert(document.body, myQ.parentNode);
@@ -131,6 +139,7 @@
         test('should not attach instance without children', function(done) {
           var myQ = document.createElement('template', 'dom-deque');
           document.body.appendChild(myQ);
+          myQ.untemplatize(myQ);
           myQ.innerHTML = '';
           var tinstance = myQ.pushBack();
 
@@ -157,8 +166,11 @@
         test('should remove instance children from the parent', function(done) {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="d0">0</div>';
           Q.pushBack();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="d1">1</div>';
           Q.pushBack();
 
@@ -182,6 +194,7 @@
           var el$ = Polymer.dom(el);
           assert(el$.firstElementChild, Q);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '';
           var tinstance = Q.pushFront();
           assert.isUndefined(tinstance._children[0]);
@@ -204,6 +217,7 @@
             return;
           }
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="x">Hello!</div>';
           Q.pushBack();
 
@@ -268,6 +282,7 @@
         test('should not call templatize() when ctor already exists', function() {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="d0">0</div>';
           // Templatization
           Q.pushBack();
@@ -284,6 +299,7 @@
           var deque = document.createElement('template', 'dom-deque');
           deque.setAttribute('id', 'dQ');
 
+          Q.untemplatize(Q);
           deque.innerHTML = '<div id="d0">0</div>';
           var i0 = deque.pushBack();
           assert.isUndefined(i0); // Since no parent ...
@@ -297,14 +313,24 @@
           assert.equal(el, container);
 
           Q.maxSize = 3;
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="tc3">3</div>';
           var i3 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="tc2">2</div>';
           var i2 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="tc1">1</div>';
           var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="tc0">0</div>';
           var i0 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="tc4">4</div>';
           var i4 = Q.pushBack();
 
@@ -322,16 +348,19 @@
         test('should correctly compute insertion point', function() {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="back"></div>';
           var iback = Q.pushBack();
           assert.isTrue(iback._children[0].nextSibling === Q); // Insert before Q
 
+          Q.untemplatize(Q);
           Q.innerHTML = '';
           var iempty = Q.pushFront();
           assert.isUndefined(iempty._children[0]);
           assert.isUndefined(iback._children[0].prevSibling);
           assert.isTrue(iback._children[0].nextSibling === Q); // Fake insert before Q
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<div id="front"></div>';
           var ifront = Q.pushFront();
           assert.isUndefined(ifront._children[0].prevSibling);
@@ -362,10 +391,15 @@
         test('more times respecting order', function() {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushBack();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
           var i0 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
           var i2 = Q.pushBack();
           assert.equal(Q._instances[0], i0);
@@ -421,10 +455,15 @@
         test('more times updating order', function() {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushBack();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
           var i0 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
           var i2 = Q.pushBack();
           var tc0 = el.querySelector('test-counter#tc0');
@@ -476,10 +515,15 @@
         test('to the instance at front', function() {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
           var i2 = Q.pushBack();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
           var i0 = Q.pushFront();
           assert.equal(el.firstElementChild, el.querySelector('test-counter#tc0'));
@@ -489,10 +533,15 @@
         test('to the instance at back', function() {
           assert.equal(el, container);
 
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
           var i2 = Q.pushBack();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
           var i0 = Q.pushFront();
           assert.equal(Q.back, i2);
@@ -510,12 +559,20 @@
           assert.equal(el, container);
 
           Q.maxSize = 3;
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc3">3</test-counter>';
           var i3 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
           var i2 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
           var i0 = Q.pushFront();
 
@@ -534,12 +591,20 @@
           assert.equal(el, container);
 
           Q.maxSize = 3;
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc3">3</test-counter>';
           var i3 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc2">2</test-counter>';
           var i2 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc1">1</test-counter>';
           var i1 = Q.pushFront();
+
+          Q.untemplatize(Q);
           Q.innerHTML = '<test-counter id="tc0">0</test-counter>';
           var i0 = Q.pushFront();
           // | TC0 | TC1 | TC2 | TC3 |

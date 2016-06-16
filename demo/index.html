@@ -60,7 +60,9 @@
               }
             },
             _contentChanged: function(content) {
-              this.$.deque.innerHTML = '<div class="instance">' + content + '</div>';
+              var d = this.$.deque;
+              d.untemplatize(d);
+              d.innerHTML = '<div class="instance">' + content + '</div>';
             },
             pushFront: function() {
               this.$.deque.pushFront();

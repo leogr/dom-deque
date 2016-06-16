@@ -95,8 +95,10 @@
 
       setup: function () {
         var content = document.getElementById('x-basic-template-content').innerHTML;
-        this.$.deque.innerHTML = content;
-        this.$.deque.pushBack();
+        var d = this.$.deque;
+        d.untemplatize(d);
+        d.innerHTML = content;
+        d.pushBack();
       },
 
       created: function() {
@@ -261,6 +263,7 @@
       setup: function() {
         var content = document.getElementById('x-compose-template-content').innerHTML;
         var deque = this.$.deque;
+        deque.untemplatize(deque);
         deque.innerHTML = content;
         deque.maxSize = 1;
         deque.pushBack();
@@ -340,6 +343,7 @@
 
     setup: function() {
       var deque = this.$.deque;
+      deque.untemplatize(deque);
       deque.innerHTML = '<p>&copy;</p><p id="binding">{{myText}}</p>';
       deque.pushBack();
     }
@@ -360,6 +364,7 @@
       },
       setup: function() {
         var deque = this.$.deque;
+        deque.untemplatize(deque);
         deque.innerHTML = '<div id="check">{{isAttached}}</div>';
         deque.pushBack();
       },
@@ -390,6 +395,7 @@
         },
         ready: function() {
           var deque = this.$.deque;
+          deque.untemplatize(deque);
           deque.innerHTML = '<x-order-of-effects id="child" base="{{base}}"></x-order-of-effects>';
           deque.pushBack();
           this.$.child = Polymer.dom(this.root).querySelector('#child');
@@ -420,6 +426,7 @@
 
         _setup: function() {
           var deque = this.$.deque;
+          deque.untemplatize(deque);
           deque.innerHTML = '<x-order-of-effects-child prop1="[[base]]" prop2="[[_computedAnnotation(base)]]"></x-order-of-effects-child>';
           deque.pushBack();
         },
@@ -498,8 +505,10 @@
         },
 
         setup: function() {
-          this.$.deque.innerHTML = '<div id="check">[[translateMessage(\'Hello World.\')]]</div>';
-          this.$.deque.pushBack();
+          var deque = this.$.deque;
+          deque.untemplatize(deque);
+          deque.innerHTML = '<div id="check">[[translateMessage(\'Hello World.\')]]</div>';
+          deque.pushBack();
         },
 
         _computeTranslateFn: function(translator) {
@@ -535,8 +544,10 @@
       },
 
       setup: function() {
-        this.$.deque.innerHTML = '<div id="check">[[translateMessage(message)]]</div>';
-        this.$.deque.pushBack();
+        var deque = this.$.deque;
+        deque.untemplatize(deque);
+        deque.innerHTML = '<div id="check">[[translateMessage(message)]]</div>';
+        deque.pushBack();
       },
 
       _computeTranslateFn: function(translator) {
@@ -570,6 +581,7 @@
 
       setup: function() {
         var deque = this.$.deque;
+        deque.untemplatize(deque);
         deque.innerHTML = '<p>[[translateMessage(\'text\')]]</p>';
         deque.pushBack();
       }
@@ -605,9 +617,11 @@
       },
 
       stampNewContent: function() {
-        this.$.deque.innerHTML = '<span id="fooWrapper">[[bar]]</span>';
-        this.$.deque.maxSize = 1;
-        this.$.deque.pushBack();
+        var deque = this.$.deque;
+        deque.untemplatize(deque);
+        deque.innerHTML = '<span id="fooWrapper">[[bar]]</span>';
+        deque.maxSize = 1;
+        deque.pushBack();
       }
 
     });

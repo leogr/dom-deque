@@ -36,10 +36,15 @@
         };
       },
       ready: function() {
-        this.$.deque.innerHTML = '<x-basic id="basic1" notifying-value="{{obj.value}}" attrvalue$="{{obj.value}}" othervalue="{{obj.value2}}"></x-basic>';
-        this.$.deque.pushBack();
-        this.$.deque.innerHTML = '<x-basic id="basic2" notifying-value="{{obj.value}}" attrvalue$="{{obj.value}}"></x-basic>';
-        this.$.deque.pushBack();
+        var deque = this.$.deque;
+
+        deque.untemplatize(deque);
+        deque.innerHTML = '<x-basic id="basic1" notifying-value="{{obj.value}}" attrvalue$="{{obj.value}}" othervalue="{{obj.value2}}"></x-basic>';
+        deque.pushBack();
+
+        deque.untemplatize(deque);
+        deque.innerHTML = '<x-basic id="basic2" notifying-value="{{obj.value}}" attrvalue$="{{obj.value}}"></x-basic>';
+        deque.pushBack();
       },
       clearObserverCounts: function() {
         for (var i in this.observerCounts) {
@@ -86,8 +91,11 @@
         };
       },
       ready: function() {
-        this.$.deque.innerHTML = '<x-compose id="compose" obj="{{obj}}"></x-compose>';
-        this.$.deque.pushBack();
+        var deque = this.$.deque;
+
+        deque.untemplatize(deque);
+        deque.innerHTML = '<x-compose id="compose" obj="{{obj}}"></x-compose>';
+        deque.pushBack();
       },
       clearObserverCounts: function() {
         for (var i in this.observerCounts) {
@@ -152,14 +160,23 @@
         };
       },
       ready: function() {
-        this.$.deque.innerHTML = '<x-basic id="basic" notifying-value="{{nested.obj.value}}" attrvalue$="{{nested.obj.value}}"></x-basic>';
-        this.$.deque.pushBack();
-        this.$.deque.innerHTML = '<x-compose id="compose" obj="{{nested.obj}}"></x-compose>';
-        this.$.deque.pushBack();
-        this.$.deque.innerHTML = '<x-forward id="forward" obj="{{nested.obj}}"></x-forward>';
-        this.$.deque.pushBack();
-        this.$.deque.innerHTML = '<div id="boundChild" computed-from-paths="{{computeFromPaths(a, nested.b, nested.obj.c)}}" array-length="{{data.length}}"></div>';
-        this.$.deque.pushBack();
+        var deque = this.$.deque;
+
+        deque.untemplatize(deque);
+        deque.innerHTML = '<x-basic id="basic" notifying-value="{{nested.obj.value}}" attrvalue$="{{nested.obj.value}}"></x-basic>';
+        deque.pushBack();
+
+        deque.untemplatize(deque);
+        deque.innerHTML = '<x-compose id="compose" obj="{{nested.obj}}"></x-compose>';
+        deque.pushBack();
+
+        deque.untemplatize(deque);
+        deque.innerHTML = '<x-forward id="forward" obj="{{nested.obj}}"></x-forward>';
+        deque.pushBack();
+
+        deque.untemplatize(deque);
+        deque.innerHTML = '<div id="boundChild" computed-from-paths="{{computeFromPaths(a, nested.b, nested.obj.c)}}" array-length="{{data.length}}"></div>';
+        deque.pushBack();
       },
       clearObserverCounts: function() {
         for (var i in this.observerCounts) {

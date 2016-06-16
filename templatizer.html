@@ -5,7 +5,6 @@
 var DomDeque = DomDeque || {};
 
 (function() {
-  var setHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
 
   /**
    * The `DomDeque.Templatizer` is an extension of `Polymer.templatizer`.
@@ -21,17 +20,6 @@ var DomDeque = DomDeque || {};
    * @polymerBehavior DomDeque.Templatizer
    */
   var TemplatizerImpl = {
-    /**
-     * Sets the HTML syntax describing the element descendants.
-     *
-     * It automatically untemplatizes the current template.
-     *
-     * @param      {string}  text  The serialized HTML to replace with.
-     */
-    set innerHTML(text) {
-      this.untemplatize(this);
-      setHTML.call(this, text);
-    },
 
     /**
      * Cleans all the template caches.

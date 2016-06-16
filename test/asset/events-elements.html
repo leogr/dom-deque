@@ -36,8 +36,10 @@
       is: 'x-on',
       behaviors: [EventLoggerImpl],
       setup: function() {
-        this.$.deque.innerHTML = '<div id="inner" on-foo="handle" on-bar="missing"></div>';
-        this.$.deque.pushBack();
+        var deque = this.$.deque;
+        deque.untemplatize(deque);
+        deque.innerHTML = '<div id="inner" on-foo="handle" on-bar="missing"></div>';
+        deque.pushBack();
       },
       teardown: function() {
         var innerEl = this.$$('#inner');
@@ -57,8 +59,10 @@
       is: 'x-dynamic',
       behaviors: [EventLoggerImpl],
       setup: function() {
-        this.$.deque.innerHTML = '<div id="inner"></div>';
-        this.$.deque.pushBack();
+        var deque = this.$.deque;
+        deque.untemplatize(deque);
+        deque.innerHTML = '<div id="inner"></div>';
+        deque.pushBack();
         var innerEl = this.$$('#inner');
 
         this.listen(this, 'foo', 'handle');
