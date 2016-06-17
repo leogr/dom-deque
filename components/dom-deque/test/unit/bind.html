@@ -896,7 +896,11 @@
         'observer',
         'complexObserver'
       ];
-      assert.deepEqual(el.invocations, expected);
+      assert.deepEqual(
+        el.invocations,
+        expected,
+        'actual effects (' + el.invocations.join(', ') + ') not deeply equal to the expected ones'
+      );
     });
   });
 
@@ -908,6 +912,7 @@
     setup(function() {
       host = document.createElement('x-instance-bind');
       document.body.appendChild(host);
+      host.setup();
     });
     teardown(function() {
       document.body.removeChild(host);

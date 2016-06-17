@@ -267,6 +267,11 @@
         deque.innerHTML = content;
         deque.maxSize = 1;
         deque.pushBack();
+
+        this.$$('#basic1').setup();
+        this.$$('#basic2').setup();
+        this.$$('#basic3').setup();
+        this.$$('#basic4').setup();
       },
       created: function() {
         this.observerCounts = {
@@ -611,7 +616,7 @@
         }
       },
 
-      ready: function() {
+      setup: function() {
         this.$.deque.maxSize = 1;
         this.$.deque.pushBack();
       },

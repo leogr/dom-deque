@@ -34,6 +34,7 @@
     setup(function() {
       el = document.createElement('x-stuff');
       document.body.appendChild(el);
+      el.setup();
     });
 
     teardown(function() {
@@ -250,6 +251,7 @@
     setup(function() {
       el = document.createElement('x-stuff');
       document.body.appendChild(el);
+      el.setup();
     });
     teardown(function() {
       document.body.removeChild(el);
@@ -401,6 +403,7 @@
     setup(function() {
       el = document.createElement('x-stuff');
       document.body.appendChild(el);
+      el.setup();
     });
     teardown(function() {
       document.body.removeChild(el);

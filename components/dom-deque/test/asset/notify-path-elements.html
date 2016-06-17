@@ -35,7 +35,7 @@
           objValueChanged: 0
         };
       },
-      ready: function() {
+      setup: function() {
         var deque = this.$.deque;
 
         deque.untemplatize(deque);
@@ -90,12 +90,14 @@
           objValueChanged: 0
         };
       },
-      ready: function() {
+      setup: function() {
         var deque = this.$.deque;
 
         deque.untemplatize(deque);
         deque.innerHTML = '<x-compose id="compose" obj="{{obj}}"></x-compose>';
         deque.pushBack();
+
+        this.$$('#compose').setup();
       },
       clearObserverCounts: function() {
         for (var i in this.observerCounts) {
@@ -159,7 +161,7 @@
           arrayOrPropChanged: 0
         };
       },
-      ready: function() {
+      setup: function() {
         var deque = this.$.deque;
 
         deque.untemplatize(deque);
@@ -177,6 +179,9 @@
         deque.untemplatize(deque);
         deque.innerHTML = '<div id="boundChild" computed-from-paths="{{computeFromPaths(a, nested.b, nested.obj.c)}}" array-length="{{data.length}}"></div>';
         deque.pushBack();
+
+        this.$$('#compose').setup();
+        this.$$('#forward').setup();
       },
       clearObserverCounts: function() {
         for (var i in this.observerCounts) {

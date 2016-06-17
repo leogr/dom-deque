@@ -9,11 +9,11 @@ module.exports = {
     sauce: {
       disabled: true,
       browsers: [
-        {
-          'browserName': 'microsoftedge',
-          'platform': 'Windows 10',
-          'version': ''
-        }
+        // {
+        //   'browserName': 'microsoftedge',
+        //   'platform': 'Windows 10',
+        //   'version': ''
+        // },
         // {
         //   'browserName': 'safari',
         //   'platform': 'OS X 10.11',
@@ -24,7 +24,17 @@ module.exports = {
         //   'platform': 'OS X 10.10',
         //   'version': '8.0'
         // },
+        // {
+        //   'browserName': 'internet explorer',
+        //   'platform': 'Windows 8.1',
+        //   'version': '11'
+        // },
 
+        {
+          'browserName': 'internet explorer',
+          'platform': 'Windows 7',
+          'version': '10'
+        }
         // {
         //   'browserName': 'safari',
         //   'platform': 'OS X 10.9',
