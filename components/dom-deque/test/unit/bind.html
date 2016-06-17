@@ -911,19 +911,24 @@
     var host;
     setup(function() {
       host = document.createElement('x-instance-bind');
+      host.setup();
       document.body.appendChild(host);
     });
     teardown(function() {
       document.body.removeChild(host);
     });
     test('stamped with initial data', function() {
-      var w = Polymer.dom(host.root).querySelector('#fooWrapper');
-      assert.equal(w.innerHTML, host.foo);
+      flush(function() {
+        var w = host.$$('#fooWrapper');
+        // var w = Polymer.dom(host.root).querySelector('#fooWrapper');
+        assert.equal(w.innerHTML, host.foo);
 
-      host.stampNewContent();
+        host.stampNewContent();
 
-      w = Polymer.dom(host.root).querySelector('#fooWrapper');
-      assert.equal(w.innerHTML, host.bar);
+        // w = Polymer.dom(host.root).querySelector('#fooWrapper');
+        w = host.$$('#fooWrapper');
+        assert.equal(w.innerHTML, host.bar);
+      });
     });
   });
 </script>
