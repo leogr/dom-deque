@@ -61,8 +61,8 @@ var DomDeque = DomDeque || {};
         // We have a new HTML within `template.content`,
         // So we create a temporary container injecting into it a copy of `template`
         var tmp = document.createElement('template');
-        tmp.innerHTML = template.outerHTML;
-
+        tmp.content.appendChild(template.cloneNode(true));
+        
         // Temporarily use the new container instead of the original one
         dataHost._template = tmp;
         // So prepare new annotations and new effects from it
