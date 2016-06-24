@@ -39,7 +39,7 @@
     "fragment"
   ],
   "scripts": {
-    "gh-pages": "shx mkdir -p gh-pages/components/dom-deque && shx cp -R bower_components/* gh-pages/components && shx ls *.{html,js} | xargs cp -t gh-pages/components/dom-deque && shx cp -R demo gh-pages/components/dom-deque && shx echo '<meta http-equiv=refresh content=\"0;URL=components/dom-deque/\">' > gh-pages/index.html && shx chmod +x node_modules/.bin/git-directory-deploy",
+    "gh-pages": "shx mkdir -p gh-pages/components/dom-deque && shx cp -R bower_components/* gh-pages/components && shx cp *.{js,html} gh-pages && shx cp -R demo gh-pages/components/dom-deque && shx echo '<meta http-equiv=refresh content=\"0;URL=components/dom-deque/\">' > gh-pages/index.html && shx chmod +x node_modules/.bin/git-directory-deploy",
     "postgh-pages": "GIT_DEPLOY_DIR=gh-pages GIT_DEPLOY_BRANCH=gh-pages git-directory-deploy -m 'Deploy gh-pages'; shx rm -rf gh-pages",
     "otherdeps": "node -e 'require(\"request\")(\"https://raw.githubusercontent.com/X1011/git-directory-deploy/master/deploy.sh\").pipe(require(\"fs\").createWriteStream(\"node_modules/.bin/git-directory-deploy\"))'",
     "postinstall": "npm run otherdeps && bower install",
